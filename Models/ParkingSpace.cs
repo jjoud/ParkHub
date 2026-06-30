@@ -19,8 +19,8 @@ namespace ParkHub.Models
         public string SpaceType { get; set; } = string.Empty;
 
         [Required]
-        [StringLength(20)]
-        public string Status { get; set; } = string.Empty;
+       
+        public bool Status { get; set; } = false;
 
         public ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
     }

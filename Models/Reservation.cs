@@ -33,8 +33,8 @@ namespace ParkHub.Models
         public decimal TotalPrice { get; set; }
 
         [Required]
-        [StringLength(20)]
-        public string ReservationStatus { get; set; } = string.Empty;
+       
+       public bool ReservationStatus { get; set; } = false;
 
         // Navigation Properties
         public Vehicle Vehicle { get; set; } = null!;
