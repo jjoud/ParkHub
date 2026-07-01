@@ -1,0 +1,48 @@
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="auth-page">
+    <div class="auth-card shadow-lg">
+        <div class="auth-illustration">
+            <div class="auth-badge">ParkHub</div>
+            <h1>Welcome back</h1>
+            <p>Access your account to manage parking reservations, view updates, and continue your trip smoothly.</p>
+            <ul class="auth-highlights">
+                <li>Fast reservation access</li>
+                <li>Secure account management</li>
+                <li>Live parking updates</li>
+            </ul>
+        </div>
+
+        <div class="auth-form-panel">
+            <div class="auth-form-heading">
+                <h2>Sign in to your account</h2>
+                <p class="text-muted">Enter your login details to continue to ParkHub.</p>
+            </div>
+
+            <form action="/Home/UserHome" method="get">
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email address</label>
+                    <input type="email" class="form-control" id="email" placeholder="you@example.com" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" placeholder="Enter your password" />
+                </div>
+
+                <div class="auth-form-note">
+                    <span>Use the same email and password you used when creating your account.</span>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2">Log in</button>
+            </form>
+
+            <div class="auth-footer">
+                <span>Don’t have an account?</span>
+                <a href="/Account/Register">Create one</a>
+            </div>
+        </div>
+    </div>
+</div>
