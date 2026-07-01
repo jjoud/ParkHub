@@ -1,5 +1,6 @@
-using System.ComponentModel.DataAnnotations;//مكتبه للتحقق من صحة البيانات
-using System.ComponentModel.DataAnnotations.Schema;//مكتبه للعلاقات بين الجداول
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace ParkHub.Models
 {
 

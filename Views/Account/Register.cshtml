@@ -1,0 +1,52 @@
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="auth-page">
+    <div class="auth-card shadow-lg">
+        <div class="auth-illustration">
+            <div class="auth-badge">ParkHub</div>
+            <h1>Create your account</h1>
+            <p>Start your ParkHub journey and keep your bookings organized in a simple, comfortable way.</p>
+            <ul class="auth-highlights">
+                <li>Quick account setup</li>
+                <li>Easy booking tracking</li>
+                <li>Clean and calm experience</li>
+            </ul>
+        </div>
+
+        <div class="auth-form-panel">
+            <h2>Create an account</h2>
+            <p class="text-muted">Enter your details to get started.</p>
+
+            <form>
+                <div class="mb-3">
+                    <label for="fullName" class="form-label">Full name</label>
+                    <input type="text" class="form-control" id="fullName" placeholder="Enter your full name" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="registerEmail" class="form-label">Email address</label>
+                    <input type="email" class="form-control" id="registerEmail" placeholder="you@example.com" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="registerPassword" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="registerPassword" placeholder="Choose a strong password" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirm password</label>
+                    <input type="password" class="form-control" id="confirmPassword" placeholder="Re-enter your password" />
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2">Create account</button>
+            </form>
+
+            <div class="auth-footer">
+                <span>Already have an account?</span>
+                <a href="/Account/Login">Sign in</a>
+            </div>
+        </div>
+    </div>
+</div>

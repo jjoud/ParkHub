@@ -1,0 +1,16 @@
+@{
+    ViewData["Title"] = "Area A";
+}
+
+<div class="area-detail-page">
+    <div class="area-detail-card">
+        <h1>Area A</h1>
+        <p>Select an available parking spot in this area.</p>
+        <div class="slot-grid">
+            @for (int i = 1; i <= 10; i++)
+            {
+                <div class="slot-card">A@(i)</div>
+            }
+        </div>
+    </div>
+</div>
