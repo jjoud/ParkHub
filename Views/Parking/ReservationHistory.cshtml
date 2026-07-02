@@ -1,0 +1,50 @@
+@model ParkHub.Models.ReservationHistoryViewModel
+@{
+    ViewData["Title"] = "Reservation History";
+}
+
+<div class="container-fluid py-5">
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h3 mb-1">Reservation History</h1>
+            <p class="text-muted mb-0">Track all of your past and upcoming reservations.</p>
+        </div>
+
+        <a class="btn" style="border: 2px solid var(--primary-pastel); color: var(--primary-pastel); border-radius: 0.5rem; font-weight: 600;" 
+           onmouseover="this.style.backgroundColor='var(--primary-pastel)'; this.style.color='white';" 
+           onmouseout="this.style.backgroundColor='transparent'; this.style.color='var(--primary-pastel)';"
+           asp-controller="Home" asp-action="Profile">Back to Profile</a>
+    </div>
+
+    <div class="card border-0 shadow-sm" style="border: 1px solid #efe2ff !important; border-radius: 1rem !important;">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ReservationDate</th>
+                            <th>DurationHours</th>
+                            <th>TotalPrice</th>
+                            <th>ReservationStatus</th>
+                            <th>AreaName</th>
+                            <th>SpaceNumber</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Reservations)
+                        {
+                            <tr>
+                                <td>@item.ReservationDate.ToString("g")</td>
+                                <td>@item.DurationHours</td>
+                                <td>@item.TotalPrice.ToString("C")</td>
+                                <td>@item.ReservationStatus</td>
+                                <td>@item.AreaName</td>
+                                <td>@item.SpaceNumber</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

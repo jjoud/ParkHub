@@ -1,0 +1,42 @@
+@model ParkHub.Models.PaymentFormViewModel
+@{
+    ViewData["Title"] = "Payment";
+}
+
+<div class="container-fluid py-4">
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Payment</h2>
+        <p class="text-muted mb-0">Complete your reservation payment.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <form asp-action="Payment" asp-controller="Parking" method="post">
+                        <input asp-for="ReservationId" type="hidden" />
+                        <div class="mb-3">
+                            <label asp-for="PaymentMethod" class="form-label">Payment Method</label>
+                            <select asp-for="PaymentMethod" class="form-select">
+                                <option value="">Select payment method</option>
+                                <option value="Credit Card">Credit Card</option>
+                                <option value="Debit Card">Debit Card</option>
+                                <option value="Cash">Cash</option>
+                                <option value="Mobile Wallet">Mobile Wallet</option>
+                            </select>
+                            <span asp-validation-for="PaymentMethod" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input asp-for="Amount" class="form-control" readonly />
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Pay Now</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

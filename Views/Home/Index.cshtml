@@ -1,8 +1,58 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "SmartPark Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container-fluid py-5 bg-white">
+    <div class="row align-items-center">
+        <div class="col-lg-6 mb-4 mb-lg-0">
+            <span class="badge mb-3" style="background-color: var(--primary-pastel);">SmartPark by ParkHub</span>
+            <h1 class="display-5 fw-bold">Modern parking reservations made simple.</h1>
+            <p class="lead text-muted">Find the best available spaces, reserve in seconds, manage your vehicles, and pay securely through a unified dashboard.</p>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-primary btn-lg" asp-controller="Home" asp-action="UserHome">View Parking</a>
+                <a class="btn btn-primary btn-lg" asp-controller="Parking" asp-action="ReservationHistory">My Reservations</a>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-5 bg-white rounded-4">
+                    <h2 class="h3 mb-4 text-purple">Getting started</h2>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-3"><strong>1.</strong> Browse available parking spaces by area.</li>
+                        <li class="mb-3"><strong>2.</strong> Reserve with your saved vehicle.</li>
+                        <li class="mb-3"><strong>3.</strong> Complete payment and track your reservation history.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-purple">Parking Index</h5>
+                    <p class="card-text text-muted">View live parking availability and reserve the space that fits your needs.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-purple">Vehicle Management</h5>
+                    <p class="card-text text-muted">Add and edit your vehicles so reservations are always ready.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-purple">Reservation History</h5>
+                    <p class="card-text text-muted">Track your past and upcoming bookings along with payment status.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

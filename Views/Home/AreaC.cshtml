@@ -3,13 +3,17 @@
 }
 
 <div class="area-detail-page">
-    <div class="area-detail-card">
-        <h1>Area C</h1>
-        <p>Select an available parking spot in this area.</p>
-        <div class="slot-grid">
+    <div class="area-detail-header">
+        <div>
+            <h1>Area C</h1>
+        </div>
+    </div>
+
+    <div class="parking-map">
+        <div class="parking-map__spots">
             @for (int i = 1; i <= 10; i++)
             {
-                <div class="slot-card">C@(i)</div>
+                <div class="parking-space">C@(i)</div>
             }
         </div>
     </div>
