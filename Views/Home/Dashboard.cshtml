@@ -1,0 +1,130 @@
+@model ParkHub.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Dashboard</h2>
+            <p class="text-muted mb-0">Overview of parking, reservations, and users.</p>
+        </div>
+        <div class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill">
+            SmartPark Admin
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">Total Parking Spaces</p>
+                            <h3 class="fw-bold">@Model.TotalParkingSpaces</h3>
+                        </div>
+                        <div class="rounded-circle bg-light p-3 text-primary">
+                            <i class="bi bi-grid-3x3-gap"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">Available Parking Spaces</p>
+                            <h3 class="fw-bold">@Model.AvailableParkingSpaces</h3>
+                        </div>
+                        <div class="rounded-circle bg-success-subtle p-3 text-success">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">Reserved Parking Spaces</p>
+                            <h3 class="fw-bold">@Model.ReservedParkingSpaces</h3>
+                        </div>
+                        <div class="rounded-circle bg-warning-subtle p-3 text-warning">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">Total Users</p>
+                            <h3 class="fw-bold">@Model.TotalUsers</h3>
+                        </div>
+                        <div class="rounded-circle bg-info-subtle p-3 text-info">
+                            <i class="bi bi-people"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">Total Reservations</p>
+                            <h3 class="fw-bold">@Model.TotalReservations</h3>
+                        </div>
+                        <div class="rounded-circle bg-secondary-subtle p-3 text-secondary">
+                            <i class="bi bi-file-earmark-text"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">Total Revenue</p>
+                            <h3 class="fw-bold">@Model.TotalRevenue.ToString("C")</h3>
+                        </div>
+                        <div class="rounded-circle bg-purple-subtle p-3 text-purple">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">Occupancy Rate</p>
+                            <h3 class="fw-bold">@Model.OccupancyRate%</h3>
+                        </div>
+                        <div class="rounded-circle bg-danger-subtle p-3 text-danger">
+                            <i class="bi bi-bar-chart"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

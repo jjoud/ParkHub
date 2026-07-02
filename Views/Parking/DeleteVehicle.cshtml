@@ -1,0 +1,30 @@
+@model ParkHub.Models.Vehicle
+@{
+    ViewData["Title"] = "Delete Vehicle";
+}
+
+<div class="container-fluid py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h1 class="h4 mb-3">Delete Vehicle</h1>
+                    <p class="text-muted">Are you sure you want to delete this vehicle?</p>
+                    <dl class="row mb-4">
+                        <dt class="col-sm-4">PlateNumber</dt>
+                        <dd class="col-sm-8">@Model.PlateNumber</dd>
+                        <dt class="col-sm-4">VehicleType</dt>
+                        <dd class="col-sm-8">@Model.VehicleType</dd>
+                        <dt class="col-sm-4">Color</dt>
+                        <dd class="col-sm-8">@Model.Color</dd>
+                    </dl>
+                    <form asp-action="DeleteVehicleConfirmed" asp-controller="Parking" method="post">
+                        <input type="hidden" asp-for="VehicleId" />
+                        <button type="submit" class="btn btn-danger me-2">Delete</button>
+                        <a asp-action="Vehicles" asp-controller="Parking" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

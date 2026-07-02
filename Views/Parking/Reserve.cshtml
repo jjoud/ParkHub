@@ -1,0 +1,55 @@
+@model ParkHub.Models.ReservationFormViewModel
+@{
+    ViewData["Title"] = "Reservation";
+}
+
+<div class="container-fluid py-4">
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Reserve Parking Space</h2>
+        <p class="text-muted mb-0">Create a reservation for @Model.AreaName - @Model.SpaceNumber.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <form asp-action="Reserve" asp-controller="Parking" method="post">
+                        <input asp-for="ParkingSpaceId" type="hidden" />
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label">Full Name</label>
+                            <input asp-for="FullName" class="form-control" placeholder="Enter your full name" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="StartTime" class="form-label">Start Time</label>
+                                <input asp-for="StartTime" class="form-control" type="datetime-local" />
+                                <span asp-validation-for="StartTime" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="EndTime" class="form-label">End Time</label>
+                                <input asp-for="EndTime" class="form-control" type="datetime-local" />
+                                <span asp-validation-for="EndTime" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        <div class="mb-3 mt-3">
+                            <label asp-for="VehicleId" class="form-label">Select Vehicle</label>
+                            <select asp-for="VehicleId" class="form-select" asp-items="@(new SelectList(Model.Vehicles, "VehicleId", "PlateNumber"))">
+                                <option value="">Choose a vehicle</option>
+                            </select>
+                            <span asp-validation-for="VehicleId" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Total Price</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input asp-for="TotalPrice" class="form-control" readonly />
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Proceed to Payment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

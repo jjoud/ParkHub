@@ -1,0 +1,132 @@
+@model ParkHub.Models.UserProfileViewModel
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<div class="container-fluid py-5">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h1 class="h3 mb-1">@Model.FullName</h1>
+                            <p class="text-muted mb-1">@Model.Email</p>
+                            <p class="text-muted mb-0">@Model.PhoneNumber</p>
+                        </div>
+                        <a class="btn btn-outline-primary" asp-controller="Account" asp-action="Register">Edit Profile</a>
+                    </div>
+                    <p class="text-muted">Manage your profile details, review your vehicles, and follow recent reservations from one place.</p>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h2 class="h5 mb-0">My Vehicles</h2>
+                            <p class="text-muted mb-0">Manage your registered vehicles for future reservations.</p>
+                        </div>
+                        <a class="btn btn-sm btn-primary" asp-controller="Parking" asp-action="Vehicles">Manage Vehicles</a>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-borderless align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Plate Number</th>
+                                    <th>Vehicle Type</th>
+                                    <th>Color</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Vehicles.Any())
+                                {
+                                    foreach (var vehicle in Model.Vehicles)
+                                    {
+                                        <tr>
+                                            <td>@vehicle.PlateNumber</td>
+                                            <td>@vehicle.VehicleType</td>
+                                            <td>@vehicle.Color</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="3" class="text-muted">No vehicles registered yet.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h2 class="h5 mb-0">Recent Reservations</h2>
+                            <p class="text-muted mb-0">A quick view of your latest two parking bookings.</p>
+                        </div>
+                        <a class="btn btn-sm btn-outline-primary" asp-controller="Parking" asp-action="ReservationHistory">View All</a>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Total Price</th>
+                                    <th>Space</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.RecentReservations.Any())
+                                {
+                                    foreach (var reservation in Model.RecentReservations)
+                                    {
+                                        <tr>
+                                            <td>@reservation.ReservationDate.ToString("g")</td>
+                                            <td>@reservation.ReservationStatus</td>
+                                            <td>@reservation.TotalPrice.ToString("C")</td>
+                                            <td>@reservation.AreaName - @reservation.SpaceNumber</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-muted">No recent reservations found.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h5">Profile Overview</h2>
+                    <p class="text-muted">This page uses your stored user information to link vehicle and reservation workflows.</p>
+                    <ul class="list-unstyled mt-4">
+                        <li class="mb-3">
+                            <span class="fw-semibold">FullName:</span> @Model.FullName
+                        </li>
+                        <li class="mb-3">
+                            <span class="fw-semibold">Email:</span> @Model.Email
+                        </li>
+                        <li class="mb-3">
+                            <span class="fw-semibold">PhoneNumber:</span> @Model.PhoneNumber
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

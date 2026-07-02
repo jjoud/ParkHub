@@ -1,32 +1,52 @@
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = "Choose Your Area";
 }
 
-<div class="user-home-page">
-    <div class="user-home-header">
-        <div>
-            <p class="eyebrow">Welcome back</p>
-            <h1>Choose your parking area</h1>
-            <p class="text-muted">Select one of the available zones to view details and continue your booking.</p>
+<div class="container-fluid py-5 bg-white">
+    <div class="row align-items-center mb-4">
+        <div class="col-lg-8">
+            <p class="text-uppercase text-purple fw-semibold mb-2">Choose Your Area</p>
+            <h1 class="fw-bold">Select a parking area</h1>
+            <p class="text-muted">Pick one of the available areas to continue to reservations and parking details.</p>
         </div>
     </div>
 
-    <div class="area-grid">
-        <a href="/Home/AreaA" class="area-card">
-            <h3>Area A</h3>
-            <p>Premium parking with quick access and nearby facilities.</p>
-        </a>
-        <a href="/Home/AreaB" class="area-card">
-            <h3>Area B</h3>
-            <p>Convenient parking for daily visits and short stays.</p>
-        </a>
-        <a href="/Home/AreaC" class="area-card">
-            <h3>Area C</h3>
-            <p>Comfortable parking with wider spaces and easy entry.</p>
-        </a>
-        <a href="/Home/AreaD" class="area-card">
-            <h3>Area D</h3>
-            <p>Ideal for longer stays with calm and organized parking.</p>
-        </a>
+    <div class="row g-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm" style="border: 1px solid #efe2ff !important;">
+                <div class="card-body">
+                    <h3 class="h5">Area A</h3>
+                    <p class="text-muted">Premium parking with quick access and nearby facilities.</p>
+                    <a class="btn btn-sm" style="background-color: var(--primary-pastel); color: white;" asp-controller="Home" asp-action="AreaA">View Area A</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm" style="border: 1px solid #efe2ff !important;">
+                <div class="card-body">
+                    <h3 class="h5">Area B</h3>
+                    <p class="text-muted">Convenient parking for daily visits and short stays.</p>
+                    <a class="btn btn-sm" style="background-color: var(--primary-pastel); color: white;" asp-controller="Home" asp-action="AreaB">View Area B</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm" style="border: 1px solid #efe2ff !important;">
+                <div class="card-body">
+                    <h3 class="h5">Area C</h3>
+                    <p class="text-muted">Comfortable parking with wider spaces and easy entry.</p>
+                    <a class="btn btn-sm" style="background-color: var(--primary-pastel); color: white;" asp-controller="Home" asp-action="AreaC">View Area C</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm" style="border: 1px solid #efe2ff !important;">
+                <div class="card-body">
+                    <h3 class="h5">Area D</h3>
+                    <p class="text-muted">Ideal for longer stays with calm and organized parking.</p>
+                    <a class="btn btn-sm" style="background-color: var(--primary-pastel); color: white;" asp-controller="Home" asp-action="AreaD">View Area D</a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
