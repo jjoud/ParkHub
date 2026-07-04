@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using ParkHub.Data;
 using ParkHub.Models;
@@ -38,7 +39,7 @@ public class HomeController : Controller
 
         if (user == null)
         {
-            return RedirectToAction(nameof(Index));
+            return View(new ReservationHistoryViewModel());
         }
 
         var recentReservations = _context.Reservations
@@ -58,11 +59,10 @@ public class HomeController : Controller
             })
             .ToList();
 
-        var model = new UserProfileViewModel
+        var model = new ReservationHistoryViewModel
         {
-            FullName = user.FullName,
-            Email = user.Email,
-            PhoneNumber = user.PhoneNumber,
+            UserFullName = user.FullName,
+            UserEmail = user.Email,
             Vehicles = user.Vehicles.Select(v => new UserVehicleSummaryViewModel
             {
                 VehicleId = v.VehicleId,
@@ -70,7 +70,16 @@ public class HomeController : Controller
                 VehicleType = v.VehicleType,
                 Color = v.Color
             }).ToList(),
-            RecentReservations = recentReservations
+            RecentReservations = recentReservations,
+            Reservations = recentReservations.Select(r => new ReservationHistoryItemViewModel
+            {
+                ReservationId = r.ReservationId,
+                ReservationDate = r.ReservationDate,
+                TotalPrice = r.TotalPrice,
+                ReservationStatus = r.ReservationStatus,
+                AreaName = r.AreaName,
+                SpaceNumber = r.SpaceNumber
+            }).ToList()
         };
 
         return View(model);
@@ -114,6 +123,8 @@ public class HomeController : Controller
             })
             .ToList();
 
+        // If there are no real parking spaces in the DB for this area,
+        // generate a set of placeholder slots so the UI still shows the grid.
         if (!spaces.Any())
         {
             spaces = Enumerable.Range(1, 12)
@@ -127,10 +138,20 @@ public class HomeController : Controller
                 .ToList();
         }
 
+        var user = _context.Users.Include(u => u.Vehicles).FirstOrDefault();
+        var vehicleList = user?.Vehicles.Select(v => new VehicleItemViewModel
+        {
+            VehicleId = v.VehicleId,
+            PlateNumber = v.PlateNumber,
+            VehicleType = v.VehicleType,
+            Color = v.Color
+        }).ToList() ?? new List<VehicleItemViewModel>();
+
         return new ParkingIndexViewModel
         {
             SelectedArea = areaName,
-            ParkingSpaces = spaces
+            ParkingSpaces = spaces,
+            Vehicles = vehicleList
         };
     }
 
