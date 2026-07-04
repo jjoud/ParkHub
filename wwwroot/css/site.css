@@ -296,6 +296,21 @@ body {
   padding: 0.75rem;
 }
 
+.parking-space {
+  position: relative;
+}
+
+.edit-icon {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  padding: 0;
+}
+
 .parking-space span {
   display: block;
   font-size: 1.05rem;

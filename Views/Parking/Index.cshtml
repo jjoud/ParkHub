@@ -31,7 +31,10 @@
                         <p class="card-text text-muted">Status uses the `Status` field from the ParkingSpace model.</p>
                     </div>
                     <div class="card-footer bg-transparent border-top-0 pt-0">
-                        <a class="btn btn-sm btn-outline-primary w-100" asp-action="Reserve" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking">Reserve this space</a>
+                        <div class="d-flex gap-2">
+                            <a class="btn btn-sm btn-outline-primary flex-grow-1" asp-action="Reserve" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking">Reserve</a>
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="ManageSpace" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking" title="Edit">✎</a>
+                        </div>
                     </div>
                 </div>
             </div>

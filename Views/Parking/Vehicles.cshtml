@@ -35,7 +35,7 @@
                                     <td>@vehicle.Color</td>
                                     <td class="text-end">
                                         <a class="btn btn-sm btn-outline-secondary me-2" asp-action="EditVehicle" asp-route-id="@vehicle.VehicleId" asp-controller="Parking">Edit</a>
-                                        <a class="btn btn-sm btn-outline-danger" asp-action="DeleteVehicle" asp-route-id="@vehicle.VehicleId" asp-controller="Parking">Delete</a>
+                                        <a class="btn btn-sm btn-outline-danger" asp-action="DeleteVehicle" asp-route-id="@vehicle.VehicleId" asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString" asp-controller="Parking">Delete</a>
                                     </td>
                                 </tr>
                             }

@@ -26,102 +26,47 @@
 
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="About">About</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="UserHome">Areas</a>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-dark"
-                               href="#"
-                               id="parkingDropdown"
-                               role="button"
-                               data-bs-toggle="dropdown">
-                                Parking
-                            </a>
-
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item"
-                                       asp-controller="Home"
-                                       asp-action="UserHome">
-                                        Parking
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a class="dropdown-item"
-                                       asp-controller="Parking"
-                                       asp-action="Vehicles">
-                                        My Vehicles
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a class="dropdown-item"
-                                       asp-controller="Parking"
-                                       asp-action="ReservationHistory">
-                                        Reservation History
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link text-dark"
-                               asp-controller="Home"
-                               asp-action="Profile">
-                                Profile
-                            </a>
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
 
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
-                                <span class="nav-link text-dark">
-                                    Hello, @User.Identity.Name
-                                </span>
+                                <span class="nav-link text-dark">Hello, @User.Identity.Name</span>
                             </li>
 
                             <li class="nav-item">
-                                <a class="nav-link text-dark"
-                                   asp-controller="Account"
-                                   asp-action="Logout">
-                                    Logout
+                                <a class="nav-link text-dark" asp-controller="Home" asp-action="Profile">Profile</a>
+                            </li>
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark" href="#" id="parkingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Parking
                                 </a>
+                                <ul class="dropdown-menu" aria-labelledby="parkingDropdown">
+                                    <li><a class="dropdown-item" asp-area="" asp-controller="home" asp-action="userhome">ِparking</a></li>
+                                    <li><a class="dropdown-item" asp-area="" asp-controller="Parking" asp-action="Vehicles">My Vehicles</a></li>
+                                    <li><a class="dropdown-item" asp-area="" asp-controller="Parking" asp-action="ReservationHistory">Reservation History</a></li>
+                                </ul>
                             </li>
 
                             <li class="nav-item">
-                                <a class="nav-link text-dark fw-semibold"
-                                   asp-controller="Home"
-                                   asp-action="Dashboard">
-                                    Dashboard
-                                </a>
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Logout">Logout</a>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark"
-                                   asp-controller="Account"
-                                   asp-action="Login">
-                                    Login
-                                </a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
                             </li>
-
                             <li class="nav-item">
-                                <a class="nav-link text-dark"
-                                   asp-controller="Account"
-                                   asp-action="Register">
-                                    Register
-                                </a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">Register</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Home" asp-action="Contact">Us</a>
                             </li>
                         }
-
                     </ul>
                 </div>
             </div>
@@ -129,6 +74,14 @@
     </header>
 
     <div class="container">
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                @successMessage
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
         <main role="main" class="pb-3">
             @RenderBody()
         </main>

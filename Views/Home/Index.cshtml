@@ -1,56 +1,69 @@
 ﻿@{
-    ViewData["Title"] = "SmartPark Home";
+    ViewData["Title"] = "Home";
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
 }
 
-<div class="container-fluid py-5 bg-white">
-    <div class="row align-items-center">
-        <div class="col-lg-6 mb-4 mb-lg-0">
-            <span class="badge mb-3" style="background-color: var(--primary-pastel);">SmartPark by ParkHub</span>
-            <h1 class="display-5 fw-bold">Modern parking reservations made simple.</h1>
-            <p class="lead text-muted">Find the best available spaces, reserve in seconds, manage your vehicles, and pay securely through a unified dashboard.</p>
+<div class="container py-5">
+    <div class="row align-items-center g-5">
+        <div class="col-lg-7">
+            <span class="badge rounded-pill px-3 py-2 mb-3" style="background-color: var(--primary-pastel); color: white;">
+                SmartPark by ParkHub
+            </span>
+            <h1 class="display-5 fw-bold mb-3">Reserve parking in minutes with a smoother experience.</h1>
+            <p class="lead text-muted mb-4">
+                Browse available spaces, manage your vehicles, and keep track of reservations from one clean dashboard.
+            </p>
+
             <div class="d-flex flex-wrap gap-2">
-                <a class="btn btn-primary btn-lg" asp-controller="Home" asp-action="UserHome">View Parking</a>
-                <a class="btn btn-primary btn-lg" asp-controller="Parking" asp-action="ReservationHistory">My Reservations</a>
+                @if (isAuthenticated)
+                {
+                    <a class="btn btn-primary btn-lg" asp-controller="Home" asp-action="UserHome">Open parking areas</a>
+                    <a class="btn btn-outline-secondary btn-lg" asp-controller="Parking" asp-action="ReservationHistory">My reservations</a>
+                }
+                else
+                {
+                    <a class="btn btn-primary btn-lg" asp-controller="Account" asp-action="Login">Login</a>
+                    <a class="btn btn-outline-secondary btn-lg" asp-controller="Account" asp-action="Register">Create account</a>
+                }
             </div>
         </div>
-        <div class="col-lg-6">
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-5 bg-white rounded-4">
-                    <h2 class="h3 mb-4 text-purple">Getting started</h2>
+
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <h2 class="h4 fw-bold mb-3">Why ParkHub?</h2>
                     <ul class="list-unstyled mb-0">
-                        <li class="mb-3"><strong>1.</strong> Browse available parking spaces by area.</li>
-                        <li class="mb-3"><strong>2.</strong> Reserve with your saved vehicle.</li>
-                        <li class="mb-3"><strong>3.</strong> Complete payment and track your reservation history.</li>
+                        <li class="mb-3"><strong>Fast booking:</strong> reserve spaces in just a few steps.</li>
+                        <li class="mb-3"><strong>Simple management:</strong> keep your vehicles and history in one place.</li>
+                        <li><strong>Clear tracking:</strong> follow the status of every reservation with confidence.</li>
                     </ul>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="container py-5">
-    <div class="row g-4">
+    <div class="row g-4 mt-2">
         <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
+            <div class="card h-100 border-0 shadow-sm rounded-4">
                 <div class="card-body">
-                    <h5 class="card-title text-purple">Parking Index</h5>
-                    <p class="card-text text-muted">View live parking availability and reserve the space that fits your needs.</p>
+                    <h3 class="h6 fw-bold">Smart reservations</h3>
+                    <p class="text-muted mb-0">Choose a space, set your timing, and confirm instantly.</p>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
+            <div class="card h-100 border-0 shadow-sm rounded-4">
                 <div class="card-body">
-                    <h5 class="card-title text-purple">Vehicle Management</h5>
-                    <p class="card-text text-muted">Add and edit your vehicles so reservations are always ready.</p>
+                    <h3 class="h6 fw-bold">Vehicle control</h3>
+                    <p class="text-muted mb-0">Save and manage your vehicles for faster booking next time.</p>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
+            <div class="card h-100 border-0 shadow-sm rounded-4">
                 <div class="card-body">
-                    <h5 class="card-title text-purple">Reservation History</h5>
-                    <p class="card-text text-muted">Track your past and upcoming bookings along with payment status.</p>
+                    <h3 class="h6 fw-bold">Secure flow</h3>
+                    <p class="text-muted mb-0">Payments and reservations are handled through a simple guided process.</p>
                 </div>
             </div>
         </div>

@@ -19,7 +19,8 @@
                         <dd class="col-sm-8">@Model.Color</dd>
                     </dl>
                     <form asp-action="DeleteVehicleConfirmed" asp-controller="Parking" method="post">
-                        <input type="hidden" asp-for="VehicleId" />
+                        <input type="hidden" name="id" value="@Model.VehicleId" />
+                        <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
                         <button type="submit" class="btn btn-danger me-2">Delete</button>
                         <a asp-action="Vehicles" asp-controller="Parking" class="btn btn-secondary">Cancel</a>
                     </form>

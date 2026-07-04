@@ -23,5 +23,11 @@ public class ReservationFormViewModel
     [Required]
     public decimal TotalPrice { get; set; }
 
+    // Optional payment fields collected on the reservation form (not processed here)
+    public string CardHolderName { get; set; } = string.Empty;
+    public string CardNumber { get; set; } = string.Empty;
+    public string CardExpiry { get; set; } = string.Empty;
+    public string CardCVV { get; set; } = string.Empty;
+
     public List<VehicleItemViewModel> Vehicles { get; set; } = new();
 }

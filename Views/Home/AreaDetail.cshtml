@@ -49,18 +49,206 @@
         </div>
 
         <div class="col-lg-8">
-            <div class="parking-map">
+            <div class="parking-map" id="parkingArea" data-is-admin="@User.IsInRole("Admin")">
                 <div class="parking-map__spots">
                     @foreach (var space in Model.ParkingSpaces)
                     {
                         var statusClass = space.Status ? "reserved" : "available";
-                        <a class="parking-space @statusClass" asp-controller="Parking" asp-action="Reserve" asp-route-id="@space.ParkingSpaceId">
-                            <span>@space.SpaceNumber</span>
-                            <small>@(space.Status ? "Reserved" : "Available")</small>
-                        </a>
+                        <div class="position-relative">
+                            <button type="button" class="parking-space btn p-0 @statusClass" data-space-id="@space.ParkingSpaceId" data-area-name="@space.AreaName" data-space-number="@space.SpaceNumber" data-status="@(space.Status ? "Reserved" : "Available")">
+                                <span>@space.SpaceNumber</span>
+                                <small>@(space.Status ? "Reserved" : "Available")</small>
+                            </button>
+
+                            @if (space.ParkingSpaceId > 0)
+                            {
+                                <a class="edit-icon btn btn-sm btn-outline-secondary shadow-sm position-absolute" style="top:6px;right:6px;line-height:1;z-index:10;" title="Edit" asp-controller="Parking" asp-action="ManageSpace" asp-route-id="@space.ParkingSpaceId">✎</a>
+                            }
+                        </div>
                     }
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- User Reservation Survey Modal -->
+<div class="modal fade" id="userReservationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-sm">
+            <div class="modal-header bg-purple-subtle border-0">
+                <h5 class="modal-title text-purple fw-bold">Reserve Parking Space</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" asp-controller="Parking" asp-action="Reserve" id="userReservationForm">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <input type="hidden" id="UR_ParkingSpaceId" name="ParkingSpaceId" />
+                    <input type="hidden" id="UR_AreaName" name="AreaName" />
+                    <input type="hidden" id="UR_SpaceNumber" name="SpaceNumber" />
+                    <input type="hidden" id="UR_TotalPrice" name="TotalPrice" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Full name</label>
+                        <input class="form-control" name="FullName" id="UR_FullName" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Vehicle</label>
+                        <select class="form-select" name="VehicleId" id="UR_VehicleId" required>
+                            <option value="">Choose vehicle</option>
+                            @foreach (var v in Model.Vehicles)
+                            {
+                                <option value="@v.VehicleId">@v.PlateNumber - @v.VehicleType</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Start</label>
+                            <input type="datetime-local" class="form-control" name="StartTime" id="UR_StartTime" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">End</label>
+                            <input type="datetime-local" class="form-control" name="EndTime" id="UR_EndTime" required />
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <label class="form-label">Total Price</label>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text">SAR</span>
+                                <input type="text" class="form-control fw-bold" id="UR_DisplayTotal" value="0.00" readonly />
+                            </div>
+                            <small class="text-muted">Price is calculated automatically: 10 SAR per hour (minimum 1 hour).</small>
+                        </div>
+                    </div>
+
+                    <hr />
+                    <h6 class="mt-3">Payment Information</h6>
+                    <div class="mb-3">
+                        <label class="form-label">Cardholder name</label>
+                        <input class="form-control" name="CardHolderName" id="UR_CardHolderName" />
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Card number</label>
+                            <input class="form-control" name="CardNumber" id="UR_CardNumber" maxlength="19" placeholder="1234 5678 9012 3456" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Expiry (MM/YY)</label>
+                            <input class="form-control" name="CardExpiry" id="UR_CardExpiry" placeholder="MM/YY" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">CVV</label>
+                            <input class="form-control" name="CardCVV" id="UR_CardCVV" maxlength="4" placeholder="123" />
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label">Notes / Purpose</label>
+                        <textarea class="form-control" id="UR_Notes" name="Notes" rows="2" placeholder="Optional"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Confirm Reservation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const isAdmin = document.getElementById('parkingArea').dataset.isAdmin?.toString().toLowerCase() === 'true';
+            const reservationModalEl = document.getElementById('userReservationModal');
+            const reservationModal = new bootstrap.Modal(reservationModalEl);
+
+            document.querySelectorAll('.parking-space').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const spaceId = this.dataset.spaceId;
+                    const areaName = this.dataset.areaName;
+                    const spaceNumber = this.dataset.spaceNumber;
+                    const status = this.dataset.status;
+
+                    if (isAdmin) {
+                        // Admin -> redirect to ManageSpace page (CRUD)
+                        window.location.href = `/Parking/ManageSpace?id=${spaceId}`;
+                        return;
+                    }
+
+                    // User -> show reservation survey modal
+                    document.getElementById('UR_ParkingSpaceId').value = spaceId;
+                    document.getElementById('UR_AreaName').value = areaName;
+                    document.getElementById('UR_SpaceNumber').value = spaceNumber;
+
+                    const now = new Date();
+                    const inOneHour = new Date(now.getTime() + 60 * 60 * 1000);
+
+                    const toLocalInput = (d) => {
+                        const pad = (n) => n.toString().padStart(2, '0');
+                        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                    };
+
+                    document.getElementById('UR_StartTime').value = toLocalInput(now);
+                    document.getElementById('UR_EndTime').value = toLocalInput(inOneHour);
+
+                    // compute and display price when modal opens
+                    computeAndSetPrice();
+
+                    reservationModal.show();
+                });
+            });
+
+            // helper to compute and set price
+            function computeAndSetPrice() {
+                const startEl = document.getElementById('UR_StartTime');
+                const endEl = document.getElementById('UR_EndTime');
+                const displayEl = document.getElementById('UR_DisplayTotal');
+                const hiddenEl = document.getElementById('UR_TotalPrice');
+
+                if (!startEl || !endEl || !displayEl || !hiddenEl) return;
+
+                const startVal = new Date(startEl.value);
+                const endVal = new Date(endEl.value);
+
+                if (isNaN(startVal) || isNaN(endVal)) {
+                    displayEl.value = '0.00';
+                    hiddenEl.value = '0.00';
+                    return;
+                }
+
+                // ensure end is after start; if not, set to start + 1 hour
+                if (endVal <= startVal) {
+                    const newEnd = new Date(startVal.getTime() + 60 * 60 * 1000);
+                    const pad = (n) => n.toString().padStart(2, '0');
+                    endEl.value = `${newEnd.getFullYear()}-${pad(newEnd.getMonth()+1)}-${pad(newEnd.getDate())}T${pad(newEnd.getHours())}:${pad(newEnd.getMinutes())}`;
+                }
+
+                let hours = Math.ceil((new Date(endEl.value) - new Date(startEl.value)) / (1000 * 60 * 60));
+                if (!hours || hours < 1) hours = 1;
+                const price = (hours * 10).toFixed(2);
+                displayEl.value = price;
+                hiddenEl.value = price;
+            }
+
+            // attach listeners to recalc when times change
+            const startInput = document.getElementById('UR_StartTime');
+            const endInput = document.getElementById('UR_EndTime');
+            if (startInput) startInput.addEventListener('change', computeAndSetPrice);
+            if (startInput) startInput.addEventListener('input', computeAndSetPrice);
+            if (endInput) endInput.addEventListener('change', computeAndSetPrice);
+            if (endInput) endInput.addEventListener('input', computeAndSetPrice);
+
+            // compute TotalPrice before submitting as a safety net
+            const userForm = document.getElementById('userReservationForm');
+            userForm.addEventListener('submit', function (e) {
+                computeAndSetPrice();
+            });
+        });
+    </script>
+}
