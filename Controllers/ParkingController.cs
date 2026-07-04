@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ParkHub.Data;
 using ParkHub.Models;
-using Microsoft.AspNetCore.Authorization;
 using ParkHub.Models.ViewModels;
 
 namespace ParkHub.Controllers;
@@ -322,7 +321,7 @@ public class ParkingController : Controller
         return RedirectToAction(nameof(Vehicles));
     }
 
-    public IActionResult DeleteVehicle(int id)
+    public IActionResult DeleteVehicle(int id, string? returnUrl = null)
     {
         var vehicle = _context.Vehicles.Find(id);
         if (vehicle == null)
@@ -330,12 +329,13 @@ public class ParkingController : Controller
             return NotFound();
         }
 
+        ViewData["ReturnUrl"] = returnUrl;
         return View(vehicle);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult DeleteVehicleConfirmed(int id)
+    public IActionResult DeleteVehicleConfirmed(int id, string? returnUrl = null)
     {
         var vehicle = _context.Vehicles.Find(id);
         if (vehicle == null)
@@ -345,6 +345,13 @@ public class ParkingController : Controller
 
         _context.Vehicles.Remove(vehicle);
         _context.SaveChanges();
+
+        TempData["SuccessMessage"] = "Vehicle deleted successfully.";
+
+        if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            return Redirect(returnUrl);
+        }
 
         return RedirectToAction(nameof(Vehicles));
     }

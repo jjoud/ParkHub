@@ -31,6 +31,7 @@ public class HomeController : Controller
         return View();
     }
 
+    [Authorize]
     public IActionResult Profile()
     {
         var user = _context.Users
@@ -85,26 +86,31 @@ public class HomeController : Controller
         return View(model);
     }
 
+    [Authorize]
     public IActionResult UserHome()
     {
         return View();
     }
 
+    [Authorize]
     public IActionResult AreaA()
     {
         return View("AreaDetail", GetAreaViewModel("Area A"));
     }
 
+    [Authorize]
     public IActionResult AreaB()
     {
         return View("AreaDetail", GetAreaViewModel("Area B"));
     }
 
+    [Authorize]
     public IActionResult AreaC()
     {
         return View("AreaDetail", GetAreaViewModel("Area C"));
     }
 
+    [Authorize]
     public IActionResult AreaD()
     {
         return View("AreaDetail", GetAreaViewModel("Area D"));
