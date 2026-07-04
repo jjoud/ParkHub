@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ParkHub.Data;
 using ParkHub.Models;
 
 namespace ParkHub.Controllers;
+[Authorize]
 
 public class ParkingController : Controller
 {
