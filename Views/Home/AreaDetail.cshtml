@@ -55,7 +55,8 @@
                     {
                         var statusClass = space.Status ? "reserved" : "available";
                         <div class="position-relative">
-                            <button type="button" class="parking-space btn p-0 @statusClass" data-space-id="@space.ParkingSpaceId" data-area-name="@space.AreaName" data-space-number="@space.SpaceNumber" data-status="@(space.Status ? "Reserved" : "Available")">
+                            var placeholderClass = space.ParkingSpaceId == 0 ? "placeholder" : string.Empty;
+                            <button type="button" class="parking-space btn p-0 @statusClass @placeholderClass" data-space-id="@space.ParkingSpaceId" data-area-name="@space.AreaName" data-space-number="@space.SpaceNumber" data-status="@(space.Status ? "Reserved" : "Available")">
                                 <span>@space.SpaceNumber</span>
                                 <small>@(space.Status ? "Reserved" : "Available")</small>
                             </button>
