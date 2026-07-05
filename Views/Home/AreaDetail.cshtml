@@ -84,6 +84,7 @@
                 @Html.AntiForgeryToken()
                 <div class="modal-body">
                     <input type="hidden" id="UR_ParkingSpaceId" name="ParkingSpaceId" />
+                    <input type="hidden" id="UR_ReturnUrl" name="returnUrl" />
                     <input type="hidden" id="UR_AreaName" name="AreaName" />
                     <input type="hidden" id="UR_SpaceNumber" name="SpaceNumber" />
                     <input type="hidden" id="UR_TotalPrice" name="TotalPrice" />
@@ -168,13 +169,18 @@
             const reservationModalEl = document.getElementById('userReservationModal');
             const reservationModal = new bootstrap.Modal(reservationModalEl);
 
-            document.querySelectorAll('.parking-space').forEach(btn => {
+                    document.querySelectorAll('.parking-space').forEach(btn => {
                 btn.addEventListener('click', function () {
                     const spaceId = this.dataset.spaceId;
                     const areaName = this.dataset.areaName;
                     const spaceNumber = this.dataset.spaceNumber;
                     const status = this.dataset.status;
-
+                            // Ignore placeholder slots (ParkingSpaceId == 0)
+                            if (!spaceId || Number(spaceId) <= 0) {
+                                // show simple alert for now
+                                alert('This slot is not available for reservation.');
+                                return;
+                            }
                     if (isAdmin) {
                         // Admin -> redirect to ManageSpace page (CRUD)
                         window.location.href = `/Parking/ManageSpace?id=${spaceId}`;
