@@ -1,0 +1,50 @@
+@model ParkHub.Models.ParkingSpace
+@{
+    ViewData["Title"] = "Add Parking Space";
+}
+
+<div class="container-fluid py-4">
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Add Parking Space</h2>
+        <p class="text-muted mb-0">Create a new parking space record.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <form asp-action="Create" asp-controller="Parking" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+                        <div class="mb-3">
+                            <label asp-for="AreaName" class="form-label">Area Name</label>
+                            <input asp-for="AreaName" class="form-control" />
+                            <span asp-validation-for="AreaName" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="SpaceNumber" class="form-label">Space Number</label>
+                            <input asp-for="SpaceNumber" class="form-control" />
+                            <span asp-validation-for="SpaceNumber" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="SpaceType" class="form-label">Space Type</label>
+                            <input asp-for="SpaceType" class="form-control" />
+                            <span asp-validation-for="SpaceType" class="text-danger small"></span>
+                        </div>
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" asp-for="Status" />
+                            <label asp-for="Status" class="form-check-label">Reserved / Occupied</label>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Save Space</button>
+                            <a class="btn btn-outline-secondary" asp-action="Index">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

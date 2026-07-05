@@ -1,0 +1,46 @@
+@model ParkHub.Models.VehicleFormViewModel
+@{
+    ViewData["Title"] = "Add Vehicle";
+}
+
+<div class="container-fluid py-4">
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Add Vehicle</h2>
+        <p class="text-muted mb-0">Enter your vehicle details.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <form asp-action="Create" asp-controller="Vehicle" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+                        <div class="mb-3">
+                            <label asp-for="PlateNumber" class="form-label">Plate Number</label>
+                            <input asp-for="PlateNumber" class="form-control" />
+                            <span asp-validation-for="PlateNumber" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="VehicleType" class="form-label">Vehicle Type</label>
+                            <input asp-for="VehicleType" class="form-control" />
+                            <span asp-validation-for="VehicleType" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Color" class="form-label">Color</label>
+                            <input asp-for="Color" class="form-control" />
+                            <span asp-validation-for="Color" class="text-danger small"></span>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Save Vehicle</button>
+                            <a class="btn btn-outline-secondary" asp-action="Index">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
