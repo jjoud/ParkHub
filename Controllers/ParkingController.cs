@@ -17,13 +17,21 @@ public class ParkingController : Controller
         _context = context;
     }
 
-    public IActionResult Index(string? areaName = null)
+    public IActionResult Index(string? areaName = null, string? searchTerm = null)
     {
         var spacesQuery = _context.ParkingSpaces.AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(areaName))
         {
             spacesQuery = spacesQuery.Where(p => p.AreaName == areaName);
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            spacesQuery = spacesQuery.Where(p =>
+                p.AreaName.Contains(searchTerm) ||
+                p.SpaceNumber.Contains(searchTerm) ||
+                p.SpaceType.Contains(searchTerm));
         }
 
         var user = _context.Users.Include(u => u.Vehicles).FirstOrDefault();
@@ -45,11 +53,168 @@ public class ParkingController : Controller
             })
             .ToList();
 
+        ViewData["SearchTerm"] = searchTerm;
+
         return View(new ParkingIndexViewModel
         {
             SelectedArea = string.IsNullOrWhiteSpace(areaName) ? "All Areas" : areaName,
             ParkingSpaces = spaces,
             Vehicles = vehicleList
+        });
+    }
+
+    public IActionResult Details(int id)
+    {
+        var space = _context.ParkingSpaces
+            .FirstOrDefault(p => p.ParkingSpaceId == id);
+
+        if (space == null)
+        {
+            return NotFound();
+        }
+
+        return View(space);
+    }
+
+    public IActionResult Create()
+    {
+        return View(new ParkingSpace());
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Create(ParkingSpace parkingSpace)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(parkingSpace);
+        }
+
+        _context.ParkingSpaces.Add(parkingSpace);
+        _context.SaveChanges();
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    public IActionResult Edit(int id)
+    {
+        var space = _context.ParkingSpaces.Find(id);
+        if (space == null)
+        {
+            return NotFound();
+        }
+
+        return View(space);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Edit(int id, ParkingSpace parkingSpace)
+    {
+        if (id != parkingSpace.ParkingSpaceId)
+        {
+            return NotFound();
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(parkingSpace);
+        }
+
+        var space = _context.ParkingSpaces.Find(id);
+        if (space == null)
+        {
+            return NotFound();
+        }
+
+        space.AreaName = parkingSpace.AreaName;
+        space.SpaceNumber = parkingSpace.SpaceNumber;
+        space.SpaceType = parkingSpace.SpaceType;
+        space.Status = parkingSpace.Status;
+        _context.SaveChanges();
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    public IActionResult Delete(int id)
+    {
+        var space = _context.ParkingSpaces.Find(id);
+        if (space == null)
+        {
+            return NotFound();
+        }
+
+        return View(space);
+    }
+
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public IActionResult DeleteConfirmed(int id)
+    {
+        var space = _context.ParkingSpaces.Find(id);
+        if (space == null)
+        {
+            return NotFound();
+        }
+
+        _context.ParkingSpaces.Remove(space);
+        _context.SaveChanges();
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    public IActionResult Available()
+    {
+        return FilteredParkingSpaces("Available Parking Spaces", _context.ParkingSpaces.Where(p => !p.Status));
+    }
+
+    public IActionResult Reserved()
+    {
+        return FilteredParkingSpaces("Reserved Parking Spaces", _context.ParkingSpaces.Where(p => p.Status));
+    }
+
+    public IActionResult VIP()
+    {
+        return FilteredParkingSpaces("VIP Parking Spaces", _context.ParkingSpaces.Where(p => p.SpaceType == "VIP"));
+    }
+
+    public IActionResult Search(string? searchTerm)
+    {
+        return RedirectToAction(nameof(Index), new { searchTerm });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult ChangeStatus(int id, bool status)
+    {
+        var space = _context.ParkingSpaces.Find(id);
+        if (space == null)
+        {
+            return NotFound();
+        }
+
+        space.Status = status;
+        _context.SaveChanges();
+
+        return RedirectToAction(nameof(Index), new { areaName = space.AreaName });
+    }
+
+    private IActionResult FilteredParkingSpaces(string title, IQueryable<ParkingSpace> query)
+    {
+        var spaces = query
+            .Select(p => new ParkingSpaceItemViewModel
+            {
+                ParkingSpaceId = p.ParkingSpaceId,
+                AreaName = p.AreaName,
+                SpaceNumber = p.SpaceNumber,
+                Status = p.Status
+            })
+            .ToList();
+
+        return View(nameof(Index), new ParkingIndexViewModel
+        {
+            SelectedArea = title,
+            ParkingSpaces = spaces
         });
     }
 
