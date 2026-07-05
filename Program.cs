@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using ParkHub.Data;
+using ParkHub.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +24,22 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
     db.Database.EnsureCreated();
+
+    if (!db.Users.Any(u => u.Email == "admin@parkhub.com"))
+    {
+        db.Users.Add(new User
+        {
+            FullName = "Admin",
+            Email = "admin@parkhub.com",
+            PhoneNumber = "0500000000",
+            PasswordHash = "Admin123",
+            Role = "Admin"
+        });
+
+        db.SaveChanges();
+    }
 }
 
 if (!app.Environment.IsDevelopment())

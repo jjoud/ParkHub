@@ -26,7 +26,10 @@ namespace ParkHub.Models
     [Required]
     public string PasswordHash { get; set; } = string.Empty;
 
-    public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
+    [Required]
+[StringLength(20)]
+public string Role { get; set; } = "Customer";
+  public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
 }
 
 }
