@@ -113,6 +113,46 @@ public class ParkingController : Controller
             return View(model);
         }
 
+        // Ensure the parking space exists and is available
+        var space = _context.ParkingSpaces.Find(model.ParkingSpaceId);
+        if (space == null)
+        {
+            ModelState.AddModelError(string.Empty, "Selected parking space does not exist.");
+            var user = _context.Users.Include(u => u.Vehicles).FirstOrDefault();
+            model.Vehicles = user?.Vehicles.Select(v => new VehicleItemViewModel
+            {
+                VehicleId = v.VehicleId,
+                PlateNumber = v.PlateNumber
+            }).ToList() ?? new List<VehicleItemViewModel>();
+            return View(model);
+        }
+
+        if (space.Status)
+        {
+            ModelState.AddModelError(string.Empty, "This parking space is already reserved.");
+            var user = _context.Users.Include(u => u.Vehicles).FirstOrDefault();
+            model.Vehicles = user?.Vehicles.Select(v => new VehicleItemViewModel
+            {
+                VehicleId = v.VehicleId,
+                PlateNumber = v.PlateNumber
+            }).ToList() ?? new List<VehicleItemViewModel>();
+            return View(model);
+        }
+
+        // Ensure selected vehicle exists and belongs to current user
+        var vehicle = _context.Vehicles.Find(model.VehicleId);
+        if (vehicle == null)
+        {
+            ModelState.AddModelError("VehicleId", "Please select a valid vehicle.");
+            var user = _context.Users.Include(u => u.Vehicles).FirstOrDefault();
+            model.Vehicles = user?.Vehicles.Select(v => new VehicleItemViewModel
+            {
+                VehicleId = v.VehicleId,
+                PlateNumber = v.PlateNumber
+            }).ToList() ?? new List<VehicleItemViewModel>();
+            return View(model);
+        }
+
         var durationHours = (int)Math.Ceiling((model.EndTime - model.StartTime).TotalHours);
         model.TotalPrice = durationHours * 10m;
 
@@ -127,6 +167,9 @@ public class ParkingController : Controller
             TotalPrice = model.TotalPrice,
             ReservationStatus = true
         };
+
+        // Mark the space as reserved
+        space.Status = true;
 
         _context.Reservations.Add(reservation);
         _context.SaveChanges();
