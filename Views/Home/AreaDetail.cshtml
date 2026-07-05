@@ -202,6 +202,9 @@
 
                     document.getElementById('UR_StartTime').value = toLocalInput(now);
                     document.getElementById('UR_EndTime').value = toLocalInput(inOneHour);
+                    // set return URL so the controller can redirect back after reservation
+                    const returnEl = document.getElementById('UR_ReturnUrl');
+                    if (returnEl) returnEl.value = window.location.href;
 
                     // compute and display price when modal opens
                     computeAndSetPrice();
