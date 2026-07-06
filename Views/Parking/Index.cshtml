@@ -16,6 +16,9 @@
     </div>
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+        @{
+            var isAdmin = User.IsInRole("Admin");
+        }
         @foreach (var space in Model.ParkingSpaces)
         {
             <div class="col">
@@ -32,8 +35,19 @@
                     </div>
                     <div class="card-footer bg-transparent border-top-0 pt-0">
                         <div class="d-flex gap-2">
-                            <a class="btn btn-sm btn-outline-primary flex-grow-1" asp-action="Reserve" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking">Reserve</a>
-                            <a class="btn btn-sm btn-outline-secondary" asp-action="ManageSpace" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking" title="Edit">✎</a>
+                            @if (space.Status && !isAdmin)
+                            {
+                                <button class="btn btn-sm btn-outline-secondary flex-grow-1 disabled" disabled>Reserved</button>
+                            }
+                            else
+                            {
+                                <a class="btn btn-sm btn-outline-primary flex-grow-1" asp-action="Reserve" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking">Reserve</a>
+                            }
+
+                            @if (isAdmin)
+                            {
+                                <a class="btn btn-sm btn-outline-secondary" asp-action="ManageSpace" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking" title="Edit">✎</a>
+                            }
                         </div>
                     </div>
                 </div>

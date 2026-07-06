@@ -5,17 +5,20 @@
 
 <div class="container-fluid py-4">
     <div class="mb-4">
-        <h2 class="fw-bold mb-1">Reserve Parking Space</h2>
-        <p class="text-muted mb-0">Create a reservation for @Model.AreaName - @Model.SpaceNumber.</p>
+        <h2 class="fw-bold mb-1">@(Model.ReservationId > 0 ? "Edit Reservation" : "Reserve Parking Space")</h2>
+        <p class="text-muted mb-0">@(Model.ReservationId > 0 ? "Update your existing reservation for" : "Create a reservation for") @Model.AreaName - @Model.SpaceNumber.</p>
     </div>
 
     <div class="row justify-content-center">
         <div class="col-12 col-lg-8">
             <div class="card shadow-sm border-0">
                 <div class="card-body">
-                    <form asp-action="Reserve" asp-controller="Parking" method="post">
-                        <input asp-for="ParkingSpaceId" type="hidden" />
-                        <div class="mb-3">
+                        <form asp-action="@(Model.ReservationId > 0 ? "EditReservation" : "Reserve")" asp-controller="Parking" method="post">
+                            @Html.AntiForgeryToken()
+                            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                            <input asp-for="ReservationId" type="hidden" />
+                            <input asp-for="ParkingSpaceId" type="hidden" />
+                            <div class="mb-3">
                             <label asp-for="FullName" class="form-label">Full Name</label>
                             <input asp-for="FullName" class="form-control" placeholder="Enter your full name" />
                             <span asp-validation-for="FullName" class="text-danger small"></span>
@@ -46,7 +49,7 @@
                                 <input asp-for="TotalPrice" class="form-control" readonly />
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary">Proceed to Payment</button>
+                        <button type="submit" class="btn btn-primary">@(Model.ReservationId > 0 ? "Save changes" : "Proceed to Payment")</button>
                     </form>
                 </div>
             </div>

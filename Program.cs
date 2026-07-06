@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using ParkHub.Data;
+using ParkHub.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +28,19 @@ using (var scope = app.Services.CreateScope())
     // Development-only seed data: add test user, vehicle and parking spaces if missing
     if (app.Environment.IsDevelopment())
     {
-        if (!db.Users.Any())
+        if (!db.Users.Any(u => u.Email.ToLower() == "admin@parkhub.com"))
+        {
+            db.Users.Add(new ParkHub.Models.User
+            {
+                FullName = "Admin User",
+                Email = "admin@parkhub.com",
+                PhoneNumber = "0500000001",
+                PasswordHash = "admin123"
+            });
+            db.SaveChanges();
+        }
+
+        if (!db.Users.Any(u => u.Email.ToLower() == "test@example.com"))
         {
             var user = new ParkHub.Models.User
             {
@@ -49,20 +62,25 @@ using (var scope = app.Services.CreateScope())
             db.SaveChanges();
         }
 
-        if (!db.ParkingSpaces.Any())
+        var areas = new[] { "Area A", "Area B", "Area C", "Area D" };
+        foreach (var area in areas)
         {
             for (int i = 1; i <= 12; i++)
             {
-                db.ParkingSpaces.Add(new ParkHub.Models.ParkingSpace
+                var spaceNumber = i.ToString("00");
+                if (!db.ParkingSpaces.Any(p => p.AreaName == area && p.SpaceNumber == spaceNumber))
                 {
-                    AreaName = "Area A",
-                    SpaceNumber = i.ToString("00"),
-                    SpaceType = "Standard",
-                    Status = false
-                });
+                    db.ParkingSpaces.Add(new ParkHub.Models.ParkingSpace
+                    {
+                        AreaName = area,
+                        SpaceNumber = spaceNumber,
+                        SpaceType = "Standard",
+                        Status = false
+                    });
+                }
             }
-            db.SaveChanges();
         }
+        db.SaveChanges();
     }
 }
 

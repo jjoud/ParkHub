@@ -9,6 +9,7 @@ public class ReservationHistoryItemViewModel
     public int DurationHours { get; set; }
     public decimal TotalPrice { get; set; }
     public string ReservationStatus { get; set; } = string.Empty;
+    public bool IsReserved { get; set; }
     public string AreaName { get; set; } = string.Empty;
     public string SpaceNumber { get; set; } = string.Empty;
     public string PlateNumber { get; set; } = string.Empty;

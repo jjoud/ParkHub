@@ -52,11 +52,14 @@ namespace ParkHub.Controllers
                 return View();
             }
 
+            var isAdmin = user.Email.Equals("admin@parkhub.com", StringComparison.OrdinalIgnoreCase);
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                 new Claim(ClaimTypes.Name, user.FullName),
-                new Claim(ClaimTypes.Email, user.Email)
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, isAdmin ? "Admin" : "User")
             };
 
             var identity = new ClaimsIdentity(

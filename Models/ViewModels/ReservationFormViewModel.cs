@@ -4,6 +4,7 @@ namespace ParkHub.Models;
 
 public class ReservationFormViewModel
 {
+    public int ReservationId { get; set; }
     public int ParkingSpaceId { get; set; }
     public string AreaName { get; set; } = string.Empty;
     public string SpaceNumber { get; set; } = string.Empty;

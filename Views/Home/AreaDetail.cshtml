@@ -54,14 +54,33 @@
                     @foreach (var space in Model.ParkingSpaces)
                     {
                         var statusClass = space.Status ? "reserved" : "available";
+                        var placeholderClass = space.ParkingSpaceId == 0 ? "placeholder" : string.Empty;
+                        var isAdminLocal = User.IsInRole("Admin");
                         <div class="position-relative">
-                            var placeholderClass = space.ParkingSpaceId == 0 ? "placeholder" : string.Empty;
-                            <button type="button" class="parking-space btn p-0 @statusClass @placeholderClass" data-space-id="@space.ParkingSpaceId" data-area-name="@space.AreaName" data-space-number="@space.SpaceNumber" data-status="@(space.Status ? "Reserved" : "Available")">
-                                <span>@space.SpaceNumber</span>
-                                <small>@(space.Status ? "Reserved" : "Available")</small>
-                            </button>
+                            @if (space.ParkingSpaceId <= 0)
+                            {
+                                <button type="button" class="parking-space btn p-0 @statusClass @placeholderClass" data-space-id="@space.ParkingSpaceId" data-area-name="@space.AreaName" data-space-number="@space.SpaceNumber" data-status="@(space.Status ? "Reserved" : "Available")" data-is-user-reserved="@space.IsReservedByCurrentUser" data-user-reservation-id="@(space.CurrentUserReservationId ?? 0)">
+                                    <span>@space.SpaceNumber</span>
+                                    <small>@(space.Status ? "Reserved" : "Available")</small>
+                                </button>
+                            }
+                            else if (space.Status)
+                            {
+                                // Reserved slot: show as reserved and disable for non-admins unless it's the current user's reservation
+                                <button type="button" class="parking-space btn p-0 @statusClass @placeholderClass" @(space.Status && !isAdminLocal && !space.IsReservedByCurrentUser ? "disabled aria-disabled=\"true\"" : "") data-space-id="@space.ParkingSpaceId" data-area-name="@space.AreaName" data-space-number="@space.SpaceNumber" data-status="Reserved" data-is-user-reserved="@space.IsReservedByCurrentUser" data-user-reservation-id="@(space.CurrentUserReservationId ?? 0)">
+                                    <span>@space.SpaceNumber</span>
+                                    <small>@(space.IsReservedByCurrentUser ? "🚗 Your reservation" : "Reserved")</small>
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="button" class="parking-space btn p-0 @statusClass @placeholderClass" data-space-id="@space.ParkingSpaceId" data-area-name="@space.AreaName" data-space-number="@space.SpaceNumber" data-status="Available" data-is-user-reserved="@space.IsReservedByCurrentUser" data-user-reservation-id="@(space.CurrentUserReservationId ?? 0)">
+                                    <span>@space.SpaceNumber</span>
+                                    <small>Available</small>
+                                </button>
+                            }
 
-                            @if (space.ParkingSpaceId > 0)
+                            @if (isAdminLocal && space.ParkingSpaceId > 0)
                             {
                                 <a class="edit-icon btn btn-sm btn-outline-secondary shadow-sm position-absolute" style="top:6px;right:6px;line-height:1;z-index:10;" title="Edit" asp-controller="Parking" asp-action="ManageSpace" asp-route-id="@space.ParkingSpaceId">✎</a>
                             }
@@ -176,19 +195,30 @@
                     const areaName = this.dataset.areaName;
                     const spaceNumber = this.dataset.spaceNumber;
                     const status = this.dataset.status;
-                            // Ignore placeholder slots (ParkingSpaceId == 0)
-                            if (!spaceId || Number(spaceId) <= 0) {
-                                // show simple alert for now
-                                alert('This slot is not available for reservation.');
-                                return;
-                            }
+                    const isUserReserved = this.dataset.isUserReserved === 'True' || this.dataset.isUserReserved === 'true';
+                    const reservationId = Number(this.dataset.userReservationId);
+
+                    // Ignore placeholder slots (ParkingSpaceId == 0)
+                    if (!spaceId || Number(spaceId) <= 0) {
+                        alert('This slot is not available for reservation.');
+                        return;
+                    }
+
                     if (isAdmin) {
-                        // Admin -> redirect to ManageSpace page (CRUD)
                         window.location.href = `/Parking/ManageSpace?id=${spaceId}`;
                         return;
                     }
 
-                    // User -> show reservation survey modal
+                    if (status === 'Reserved' && !isUserReserved) {
+                        alert('This parking space is already reserved.');
+                        return;
+                    }
+
+                    if (status === 'Reserved' && isUserReserved && reservationId > 0) {
+                        window.location.href = `/Parking/EditReservation?id=${reservationId}`;
+                        return;
+                    }
+
                     document.getElementById('UR_ParkingSpaceId').value = spaceId;
                     document.getElementById('UR_AreaName').value = areaName;
                     document.getElementById('UR_SpaceNumber').value = spaceNumber;
