@@ -9,48 +9,68 @@
             <h2 class="fw-bold mb-1">@Model.SelectedArea</h2>
             <p class="text-muted mb-0">Browse available parking spaces and start a reservation.</p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex flex-wrap gap-2">
             <a class="btn btn-outline-secondary" asp-controller="Home" asp-action="UserHome">Back to Areas</a>
+            <a class="btn btn-outline-success" asp-action="Available" asp-controller="Parking">Available</a>
+            <a class="btn btn-outline-danger" asp-action="Reserved" asp-controller="Parking">Reserved</a>
+            <a class="btn btn-outline-warning" asp-action="VIP" asp-controller="Parking">VIP</a>
+            <a class="btn btn-primary" asp-action="Create" asp-controller="Parking">Add Space</a>
             <a class="btn btn-primary" asp-action="ReservationHistory" asp-controller="Parking">My Reservations</a>
         </div>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
-        @{
-            var isAdmin = User.IsInRole("Admin");
-        }
-        @foreach (var space in Model.ParkingSpaces)
-        {
-            <div class="col">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <h5 class="card-title mb-1">@space.AreaName - @space.SpaceNumber</h5>
-                                <p class="text-muted small mb-0">ParkingSpaceId: @space.ParkingSpaceId</p>
-                            </div>
-                            <span class="badge @(space.Status ? "bg-danger" : "bg-success")">@(space.Status ? "Reserved" : "Available")</span>
-                        </div>
-                        <p class="card-text text-muted">Status uses the `Status` field from the ParkingSpace model.</p>
-                    </div>
-                    <div class="card-footer bg-transparent border-top-0 pt-0">
-                        <div class="d-flex gap-2">
-                            @if (space.Status && !isAdmin)
-                            {
-                                <button class="btn btn-sm btn-outline-secondary flex-grow-1 disabled" disabled>Reserved</button>
-                            }
-                            else
-                            {
-                                <a class="btn btn-sm btn-outline-primary flex-grow-1" asp-action="Reserve" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking">Reserve</a>
-                            }
+    <form class="row g-2 mb-4" asp-action="Search" asp-controller="Parking" method="get">
+        <div class="col-12 col-md-9">
+            <input class="form-control" type="search" name="searchTerm" value="@ViewData["SearchTerm"]" placeholder="Search by area, space number, or type" />
+        </div>
+        <div class="col-12 col-md-3 d-grid">
+            <button class="btn btn-outline-primary" type="submit">Search</button>
+        </div>
+    </form>
 
-                            @if (isAdmin)
-                            {
-                                <a class="btn btn-sm btn-outline-secondary" asp-action="ManageSpace" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking" title="Edit">✎</a>
-                            }
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+        @{ var isAdmin = User.IsInRole("Admin"); }
+        @if (Model.ParkingSpaces.Any())
+        {
+            @foreach (var space in Model.ParkingSpaces)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h5 class="card-title mb-1">@space.AreaName - @space.SpaceNumber</h5>
+                                    <p class="text-muted small mb-0">ParkingSpaceId: @space.ParkingSpaceId</p>
+                                </div>
+                                <span class="badge @(space.Status ? "bg-danger" : "bg-success")">@(space.Status ? "Reserved" : "Available")</span>
+                            </div>
+                            <p class="card-text text-muted">Status uses the Status field from the ParkingSpace model.</p>
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0 pt-0">
+                            <div class="d-flex gap-2">
+                                @if (space.Status && !isAdmin)
+                                {
+                                    <button class="btn btn-sm btn-outline-secondary flex-grow-1 disabled" disabled>Reserved</button>
+                                }
+                                else
+                                {
+                                    <a class="btn btn-sm btn-outline-primary flex-grow-1" asp-action="Reserve" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking">Reserve</a>
+                                }
+
+                                @if (isAdmin)
+                                {
+                                    <a class="btn btn-sm btn-outline-secondary" asp-action="ManageSpace" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking" title="Edit">✎</a>
+                                }
+                            </div>
                         </div>
                     </div>
                 </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="alert alert-light border text-center text-muted">No parking spaces found.</div>
             </div>
         }
     </div>

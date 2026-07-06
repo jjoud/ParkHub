@@ -24,6 +24,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
     db.Database.EnsureCreated();
     // Development-only seed data: add test user, vehicle and parking spaces if missing
     if (app.Environment.IsDevelopment())
@@ -35,7 +36,8 @@ using (var scope = app.Services.CreateScope())
                 FullName = "Admin User",
                 Email = "admin@parkhub.com",
                 PhoneNumber = "0500000001",
-                PasswordHash = "admin123"
+                PasswordHash = "admin123",
+                Role = "Admin"
             });
             db.SaveChanges();
         }
@@ -47,7 +49,8 @@ using (var scope = app.Services.CreateScope())
                 FullName = "Test User",
                 Email = "test@example.com",
                 PhoneNumber = "0500000000",
-                PasswordHash = "seeded"
+                PasswordHash = "seeded",
+                Role = "User"
             };
             db.Users.Add(user);
             db.SaveChanges();
@@ -80,6 +83,7 @@ using (var scope = app.Services.CreateScope())
                 }
             }
         }
+
         db.SaveChanges();
     }
 }

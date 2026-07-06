@@ -26,6 +26,8 @@ namespace ParkHub.Controllers
         {
             if (ModelState.IsValid)
             {
+                user.Role = "Customer";
+
                 _context.Users.Add(user);
                 _context.SaveChanges();
 
@@ -53,13 +55,14 @@ namespace ParkHub.Controllers
             }
 
             var isAdmin = user.Email.Equals("admin@parkhub.com", StringComparison.OrdinalIgnoreCase);
+            var role = user.Role ?? (isAdmin ? "Admin" : "User");
 
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                 new Claim(ClaimTypes.Name, user.FullName),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, isAdmin ? "Admin" : "User")
+                new Claim(ClaimTypes.Role, role)
             };
 
             var identity = new ClaimsIdentity(
@@ -71,6 +74,11 @@ namespace ParkHub.Controllers
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal);
+
+            if ((user.Role ?? "Customer") == "Admin")
+            {
+                return RedirectToAction("Index", "Parking");
+            }
 
             return RedirectToAction("Index", "Home");
         }
