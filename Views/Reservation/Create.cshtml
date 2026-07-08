@@ -1,0 +1,117 @@
+@model ParkHub.Models.ReservationFormViewModel
+@{
+    ViewData["Title"] = "Create Reservation";
+}
+
+<div class="container py-4">
+
+    <div class="card shadow-sm border-0 rounded-4">
+
+        <div class="card-header bg-white">
+            <h3 class="fw-bold text-purple mb-0">
+                Reserve Parking Space
+            </h3>
+        </div>
+
+        <div class="card-body">
+
+            <form asp-action="Create" method="post">
+
+                <input asp-for="ParkingSpaceId" type="hidden" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Area</label>
+                        <input class="form-control"
+                               value="@Model.AreaName"
+                               readonly />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Parking Space</label>
+                        <input class="form-control"
+                               value="@Model.SpaceNumber"
+                               readonly />
+                    </div>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label asp-for="VehicleId" class="form-label"></label>
+
+                    <select asp-for="VehicleId"
+                            asp-items="@(new SelectList(Model.Vehicles,"VehicleId","PlateNumber"))"
+                            class="form-select">
+
+                        <option value="">Select Vehicle</option>
+
+                    </select>
+
+                    <span asp-validation-for="VehicleId" class="text-danger"></span>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label asp-for="StartTime" class="form-label"></label>
+
+                        <input asp-for="StartTime"
+                               type="datetime-local"
+                               class="form-control" />
+
+                        <span asp-validation-for="StartTime"
+                              class="text-danger"></span>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label asp-for="EndTime"
+                               class="form-label"></label>
+
+                        <input asp-for="EndTime"
+                               type="datetime-local"
+                               class="form-control" />
+
+                        <span asp-validation-for="EndTime"
+                              class="text-danger"></span>
+
+                    </div>
+
+                </div>
+
+                <div class="d-flex gap-2">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        Confirm Reservation
+
+                    </button>
+
+                    <a asp-action="Index"
+                       class="btn btn-outline-secondary">
+
+                        Cancel
+
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+}
