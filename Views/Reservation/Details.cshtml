@@ -1,0 +1,118 @@
+@model ParkHub.Models.Reservation
+
+@{
+    ViewData["Title"] = "Reservation Details";
+}
+
+<div class="container py-4">
+
+    <div class="card shadow-sm border-0 rounded-4">
+
+        <div class="card-header bg-white">
+            <h3 class="fw-bold text-purple mb-0">
+                Reservation Details
+            </h3>
+        </div>
+
+        <div class="card-body">
+
+            <dl class="row">
+
+                <dt class="col-sm-3">
+                    Reservation ID
+                </dt>
+                <dd class="col-sm-9">
+                    @Model.ReservationId
+                </dd>
+
+                <dt class="col-sm-3">
+                    Area
+                </dt>
+                <dd class="col-sm-9">
+                    @Model.ParkingSpace.AreaName
+                </dd>
+
+                <dt class="col-sm-3">
+                    Parking Space
+                </dt>
+                <dd class="col-sm-9">
+                    @Model.ParkingSpace.SpaceNumber
+                </dd>
+
+                <dt class="col-sm-3">
+                    Vehicle
+                </dt>
+                <dd class="col-sm-9">
+                    @Model.Vehicle.PlateNumber
+                </dd>
+
+                <dt class="col-sm-3">
+                    Start Time
+                </dt>
+                <dd class="col-sm-9">
+                    @Model.StartTime.ToString("f")
+                </dd>
+
+                <dt class="col-sm-3">
+                    End Time
+                </dt>
+                <dd class="col-sm-9">
+                    @Model.EndTime.ToString("f")
+                </dd>
+
+                <dt class="col-sm-3">
+                    Duration
+                </dt>
+                <dd class="col-sm-9">
+                    @Model.DurationHours Hours
+                </dd>
+
+                <dt class="col-sm-3">
+                    Total Price
+                </dt>
+                <dd class="col-sm-9">
+                    @Model.TotalPrice SAR
+                </dd>
+
+                <dt class="col-sm-3">
+                    Status
+                </dt>
+                <dd class="col-sm-9">
+
+                    @if (Model.ReservationStatus)
+                    {
+                        <span class="badge bg-success">
+                            Reserved
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">
+                            Completed
+                        </span>
+                    }
+
+                </dd>
+
+            </dl>
+
+        </div>
+
+        <div class="card-footer bg-white">
+
+            <a asp-action="Edit"
+               asp-route-id="@Model.ReservationId"
+               class="btn btn-warning">
+                Edit
+            </a>
+
+            <a asp-action="Index"
+               class="btn btn-secondary">
+                Back
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
