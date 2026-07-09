@@ -29,6 +29,7 @@
     </form>
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+        @{ var isAdmin = User.IsInRole("Admin"); }
         @if (Model.ParkingSpaces.Any())
         {
             @foreach (var space in Model.ParkingSpaces)
@@ -46,20 +47,21 @@
                             <p class="card-text text-muted">Status uses the Status field from the ParkingSpace model.</p>
                         </div>
                         <div class="card-footer bg-transparent border-top-0 pt-0">
-                            <div class="d-flex flex-wrap gap-2">
-                                <a class="btn btn-sm btn-outline-primary" asp-action="Reserve" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking">Reserve</a>
-                                <a class="btn btn-sm btn-outline-secondary" asp-action="Details" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking">Details</a>
-                                <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking">Edit</a>
-                                <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking">Delete</a>
-                                <a class="btn btn-sm btn-outline-dark" asp-action="ManageSpace" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking">Manage</a>
+                            <div class="d-flex gap-2">
+                                @if (space.Status && !isAdmin)
+                                {
+                                    <button class="btn btn-sm btn-outline-secondary flex-grow-1 disabled" disabled>Reserved</button>
+                                }
+                                else
+                                {
+                                    <a class="btn btn-sm btn-outline-primary flex-grow-1" asp-action="Reserve" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking">Reserve</a>
+                                }
+
+                                @if (isAdmin)
+                                {
+                                    <a class="btn btn-sm btn-outline-secondary" asp-action="ManageSpace" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking" title="Edit">✎</a>
+                                }
                             </div>
-                            <form class="mt-2" asp-action="ChangeStatus" asp-controller="Parking" method="post">
-                                <input type="hidden" name="id" value="@space.ParkingSpaceId" />
-                                <input type="hidden" name="status" value="@(!space.Status)" />
-                                <button class="btn btn-sm btn-outline-info w-100" type="submit">
-                                    Mark as @(space.Status ? "Available" : "Reserved")
-                                </button>
-                            </form>
                         </div>
                     </div>
                 </div>

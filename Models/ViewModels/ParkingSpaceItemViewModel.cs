@@ -6,4 +6,6 @@ public class ParkingSpaceItemViewModel
     public string AreaName { get; set; } = string.Empty;
     public string SpaceNumber { get; set; } = string.Empty;
     public bool Status { get; set; }
+    public bool IsReservedByCurrentUser { get; set; }
+    public int? CurrentUserReservationId { get; set; }
 }

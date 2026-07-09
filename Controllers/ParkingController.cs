@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -34,7 +35,7 @@ public class ParkingController : Controller
                 p.SpaceType.Contains(searchTerm));
         }
 
-        var user = _context.Users.Include(u => u.Vehicles).FirstOrDefault();
+        var user = GetCurrentUser();
         var vehicleList = user?.Vehicles.Select(v => new VehicleItemViewModel
         {
             VehicleId = v.VehicleId,
@@ -231,12 +232,38 @@ public class ParkingController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        var user = _context.Users.Include(u => u.Vehicles).FirstOrDefault();
-        var vehicleList = user?.Vehicles.Select(v => new VehicleItemViewModel
+        var user = GetCurrentUser();
+        var reservationOwnedByCurrentUser = user != null
+            ? _context.Reservations.Include(r => r.Vehicle).FirstOrDefault(r => r.ParkingSpaceId == id && r.ReservationStatus && r.Vehicle.UserId == user.UserId)
+            : null;
+
+        if (space.Status && reservationOwnedByCurrentUser == null)
         {
-            VehicleId = v.VehicleId,
-            PlateNumber = v.PlateNumber
-        }).ToList() ?? new List<VehicleItemViewModel>();
+            // this spot is already reserved by someone else
+            return RedirectToAction(nameof(Index), new { areaName = space.AreaName });
+        }
+
+        if (reservationOwnedByCurrentUser != null)
+        {
+            return RedirectToAction(nameof(EditReservation), new { id = reservationOwnedByCurrentUser.ReservationId });
+        }
+
+        var availableVehicles = user?.Vehicles
+            .Where(v => !_context.Reservations.Any(r => r.VehicleId == v.VehicleId && r.ReservationStatus))
+            .Select(v => new VehicleItemViewModel
+            {
+                VehicleId = v.VehicleId,
+                PlateNumber = v.PlateNumber
+            })
+            .ToList() ?? new List<VehicleItemViewModel>();
+
+        if (!availableVehicles.Any())
+        {
+            TempData["ErrorMessage"] = "You must have an available vehicle before creating a new reservation. Please add or free up a vehicle.";
+            return RedirectToAction(nameof(Vehicles));
+        }
+
+        var vehicleList = availableVehicles;
 
         var model = new ReservationFormViewModel
         {
@@ -253,11 +280,11 @@ public class ParkingController : Controller
     }
 
     [HttpPost]
-    public IActionResult Reserve(ReservationFormViewModel model)
+    public IActionResult Reserve(ReservationFormViewModel model, string? returnUrl = null)
     {
         if (!ModelState.IsValid)
         {
-            var user = _context.Users.Include(u => u.Vehicles).FirstOrDefault();
+            var user = GetCurrentUser();
             model.Vehicles = user?.Vehicles.Select(v => new VehicleItemViewModel
             {
                 VehicleId = v.VehicleId,
@@ -269,7 +296,7 @@ public class ParkingController : Controller
         if (model.EndTime <= model.StartTime)
         {
             ModelState.AddModelError("EndTime", "EndTime must be later than StartTime.");
-            var user = _context.Users.Include(u => u.Vehicles).FirstOrDefault();
+            var user = GetCurrentUser();
             model.Vehicles = user?.Vehicles.Select(v => new VehicleItemViewModel
             {
                 VehicleId = v.VehicleId,
@@ -283,7 +310,7 @@ public class ParkingController : Controller
         if (space == null)
         {
             ModelState.AddModelError(string.Empty, "Selected parking space does not exist.");
-            var user = _context.Users.Include(u => u.Vehicles).FirstOrDefault();
+            var user = GetCurrentUser();
             model.Vehicles = user?.Vehicles.Select(v => new VehicleItemViewModel
             {
                 VehicleId = v.VehicleId,
@@ -295,7 +322,7 @@ public class ParkingController : Controller
         if (space.Status)
         {
             ModelState.AddModelError(string.Empty, "This parking space is already reserved.");
-            var user = _context.Users.Include(u => u.Vehicles).FirstOrDefault();
+            var user = GetCurrentUser();
             model.Vehicles = user?.Vehicles.Select(v => new VehicleItemViewModel
             {
                 VehicleId = v.VehicleId,
@@ -305,16 +332,21 @@ public class ParkingController : Controller
         }
 
         // Ensure selected vehicle exists and belongs to current user
-        var vehicle = _context.Vehicles.Find(model.VehicleId);
+        var currentUser = GetCurrentUser();
+        var vehicle = currentUser == null
+            ? null
+            : _context.Vehicles.FirstOrDefault(v => v.VehicleId == model.VehicleId && v.UserId == currentUser.UserId);
         if (vehicle == null)
         {
             ModelState.AddModelError("VehicleId", "Please select a valid vehicle.");
-            var user = _context.Users.Include(u => u.Vehicles).FirstOrDefault();
-            model.Vehicles = user?.Vehicles.Select(v => new VehicleItemViewModel
-            {
-                VehicleId = v.VehicleId,
-                PlateNumber = v.PlateNumber
-            }).ToList() ?? new List<VehicleItemViewModel>();
+            var user = GetCurrentUser();
+            model.Vehicles = user?.Vehicles
+                .Where(v => !_context.Reservations.Any(r => r.VehicleId == v.VehicleId && r.ReservationStatus))
+                .Select(v => new VehicleItemViewModel
+                {
+                    VehicleId = v.VehicleId,
+                    PlateNumber = v.PlateNumber
+                }).ToList() ?? new List<VehicleItemViewModel>();
             return View(model);
         }
 
@@ -339,7 +371,124 @@ public class ParkingController : Controller
         _context.Reservations.Add(reservation);
         _context.SaveChanges();
 
+        if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            TempData["SuccessMessage"] = "Reservation created successfully.";
+            return Redirect(returnUrl);
+        }
+
         return RedirectToAction(nameof(Payment), new { reservationId = reservation.ReservationId, amount = reservation.TotalPrice });
+    }
+
+    public IActionResult EditReservation(int id)
+    {
+        if (id <= 0)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        var currentUser = GetCurrentUser();
+        if (currentUser == null)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        var reservation = _context.Reservations
+            .Include(r => r.Vehicle)
+            .Include(r => r.ParkingSpace)
+            .FirstOrDefault(r => r.ReservationId == id && r.ReservationStatus && r.Vehicle.UserId == currentUser.UserId);
+
+        if (reservation == null)
+        {
+            return NotFound();
+        }
+
+        var availableVehicles = currentUser.Vehicles
+            .Select(v => new VehicleItemViewModel
+            {
+                VehicleId = v.VehicleId,
+                PlateNumber = v.PlateNumber
+            })
+            .ToList();
+
+        var model = new ReservationFormViewModel
+        {
+            ReservationId = reservation.ReservationId,
+            ParkingSpaceId = reservation.ParkingSpaceId,
+            AreaName = reservation.ParkingSpace.AreaName,
+            SpaceNumber = reservation.ParkingSpace.SpaceNumber,
+            FullName = currentUser.FullName,
+            StartTime = reservation.StartTime,
+            EndTime = reservation.EndTime,
+            VehicleId = reservation.VehicleId,
+            TotalPrice = reservation.TotalPrice,
+            Vehicles = availableVehicles
+        };
+
+        return View("Reserve", model);
+    }
+
+    [HttpPost]
+    public IActionResult EditReservation(ReservationFormViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var user = GetCurrentUser();
+            model.Vehicles = user?.Vehicles.Select(v => new VehicleItemViewModel
+            {
+                VehicleId = v.VehicleId,
+                PlateNumber = v.PlateNumber
+            }).ToList() ?? new List<VehicleItemViewModel>();
+            return View("Reserve", model);
+        }
+
+        if (model.EndTime <= model.StartTime)
+        {
+            ModelState.AddModelError("EndTime", "EndTime must be later than StartTime.");
+            var user = GetCurrentUser();
+            model.Vehicles = user?.Vehicles.Select(v => new VehicleItemViewModel
+            {
+                VehicleId = v.VehicleId,
+                PlateNumber = v.PlateNumber
+            }).ToList() ?? new List<VehicleItemViewModel>();
+            return View("Reserve", model);
+        }
+
+        var currentUser = GetCurrentUser();
+        if (currentUser == null)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        var reservation = _context.Reservations
+            .Include(r => r.Vehicle)
+            .Include(r => r.ParkingSpace)
+            .FirstOrDefault(r => r.ReservationId == model.ReservationId && r.Vehicle.UserId == currentUser.UserId && r.ReservationStatus);
+        if (reservation == null)
+        {
+            return NotFound();
+        }
+
+        var vehicle = _context.Vehicles.FirstOrDefault(v => v.VehicleId == model.VehicleId && v.UserId == currentUser.UserId);
+        if (vehicle == null)
+        {
+            ModelState.AddModelError("VehicleId", "Please select a valid vehicle.");
+            model.Vehicles = currentUser.Vehicles.Select(v => new VehicleItemViewModel
+            {
+                VehicleId = v.VehicleId,
+                PlateNumber = v.PlateNumber
+            }).ToList();
+            return View("Reserve", model);
+        }
+
+        reservation.VehicleId = model.VehicleId;
+        reservation.StartTime = model.StartTime;
+        reservation.EndTime = model.EndTime;
+        reservation.DurationHours = (int)Math.Ceiling((model.EndTime - model.StartTime).TotalHours);
+        reservation.TotalPrice = reservation.DurationHours * 10m;
+        _context.SaveChanges();
+
+        return RedirectToAction(nameof(ReservationHistory));
     }
 
     [HttpPost]
@@ -372,7 +521,7 @@ public class ParkingController : Controller
             return BadRequest(new { success = false, message = "This parking space is already reserved." });
         }
 
-        var user = _context.Users.Include(u => u.Vehicles).FirstOrDefault();
+        var user = GetCurrentUser();
         if (user == null || !user.Vehicles.Any(v => v.VehicleId == request.VehicleId))
         {
             return BadRequest(new { success = false, message = "Selected vehicle is not available." });
@@ -445,7 +594,7 @@ public class ParkingController : Controller
 
     public IActionResult Vehicles()
     {
-        var user = _context.Users.Include(u => u.Vehicles).FirstOrDefault();
+        var user = GetCurrentUser();
         var vehicles = user?.Vehicles.Select(v => new VehicleItemViewModel
         {
             VehicleId = v.VehicleId,
@@ -470,7 +619,7 @@ public class ParkingController : Controller
             return View(model);
         }
 
-        var user = _context.Users.FirstOrDefault();
+        var user = GetCurrentUser();
         if (user == null)
         {
             return RedirectToAction(nameof(Vehicles));
@@ -492,7 +641,10 @@ public class ParkingController : Controller
 
     public IActionResult EditVehicle(int id)
     {
-        var vehicle = _context.Vehicles.Find(id);
+        var currentUser = GetCurrentUser();
+        var vehicle = currentUser == null
+            ? null
+            : _context.Vehicles.FirstOrDefault(v => v.VehicleId == id && v.UserId == currentUser.UserId);
         if (vehicle == null)
         {
             return NotFound();
@@ -515,7 +667,10 @@ public class ParkingController : Controller
             return View(model);
         }
 
-        var vehicle = _context.Vehicles.Find(model.VehicleId);
+        var currentUser = GetCurrentUser();
+        var vehicle = currentUser == null
+            ? null
+            : _context.Vehicles.FirstOrDefault(v => v.VehicleId == model.VehicleId && v.UserId == currentUser.UserId);
         if (vehicle == null)
         {
             return NotFound();
@@ -531,7 +686,10 @@ public class ParkingController : Controller
 
     public IActionResult DeleteVehicle(int id, string? returnUrl = null)
     {
-        var vehicle = _context.Vehicles.Find(id);
+        var currentUser = GetCurrentUser();
+        var vehicle = currentUser == null
+            ? null
+            : _context.Vehicles.FirstOrDefault(v => v.VehicleId == id && v.UserId == currentUser.UserId);
         if (vehicle == null)
         {
             return NotFound();
@@ -545,7 +703,10 @@ public class ParkingController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult DeleteVehicleConfirmed(int id, string? returnUrl = null)
     {
-        var vehicle = _context.Vehicles.Find(id);
+        var currentUser = GetCurrentUser();
+        var vehicle = currentUser == null
+            ? null
+            : _context.Vehicles.FirstOrDefault(v => v.VehicleId == id && v.UserId == currentUser.UserId);
         if (vehicle == null)
         {
             return NotFound();
@@ -566,7 +727,7 @@ public class ParkingController : Controller
 
     public IActionResult ReservationHistory()
     {
-        var user = _context.Users.Include(u => u.Vehicles).FirstOrDefault();
+        var user = GetCurrentUser();
         var reservations = _context.Reservations
             .Include(r => r.ParkingSpace)
             .Include(r => r.Vehicle)
@@ -579,6 +740,7 @@ public class ParkingController : Controller
                 DurationHours = r.DurationHours,
                 TotalPrice = r.TotalPrice,
                 ReservationStatus = r.ReservationStatus ? "Reserved" : "Completed",
+                IsReserved = r.ReservationStatus,
                 AreaName = r.ParkingSpace.AreaName,
                 SpaceNumber = r.ParkingSpace.SpaceNumber,
                 PlateNumber = r.Vehicle.PlateNumber
@@ -588,6 +750,42 @@ public class ParkingController : Controller
         return View(new ReservationHistoryViewModel { Reservations = reservations });
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult DeleteReservationConfirmed(int id)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser == null)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        var reservation = _context.Reservations
+            .Include(r => r.Vehicle)
+            .FirstOrDefault(r => r.ReservationId == id && r.Vehicle.UserId == currentUser.UserId);
+
+        if (reservation == null)
+        {
+            return NotFound();
+        }
+
+        if (reservation.ReservationStatus)
+        {
+            var parkingSpace = _context.ParkingSpaces.Find(reservation.ParkingSpaceId);
+            if (parkingSpace != null)
+            {
+                parkingSpace.Status = false;
+            }
+        }
+
+        _context.Reservations.Remove(reservation);
+        _context.SaveChanges();
+
+        TempData["SuccessMessage"] = "Your reservation has been deleted.";
+        return RedirectToAction(nameof(ReservationHistory));
+    }
+
+    [Authorize(Roles = "Admin")]
     public IActionResult ManageSpace(int id)
     {
         if (id <= 0)
@@ -624,6 +822,7 @@ public class ParkingController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
     public IActionResult ManageSpace(ParkingAdminViewModel model)
     {
         if (!ModelState.IsValid)
@@ -669,5 +868,18 @@ public class ParkingController : Controller
         _context.SaveChanges();
 
         return RedirectToAction(nameof(Index), new { areaName = space.AreaName });
+    }
+
+    private User? GetCurrentUser()
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdClaim, out var userId))
+        {
+            return null;
+        }
+
+        return _context.Users
+            .Include(u => u.Vehicles)
+            .FirstOrDefault(u => u.UserId == userId);
     }
 }

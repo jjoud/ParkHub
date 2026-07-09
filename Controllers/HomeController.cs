@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -34,9 +35,7 @@ public class HomeController : Controller
     [Authorize]
     public IActionResult Profile()
     {
-        var user = _context.Users
-            .Include(u => u.Vehicles)
-            .FirstOrDefault();
+        var user = GetCurrentUser();
 
         if (user == null)
         {
@@ -144,7 +143,23 @@ public class HomeController : Controller
                 .ToList();
         }
 
-        var user = _context.Users.Include(u => u.Vehicles).FirstOrDefault();
+        var user = GetCurrentUser();
+        var currentUserVehicleIds = user?.Vehicles.Select(v => v.VehicleId).ToHashSet() ?? new HashSet<int>();
+        var currentUserReservations = _context.Reservations
+            .Where(r => currentUserVehicleIds.Contains(r.VehicleId) && r.ReservationStatus)
+            .Select(r => new { r.ParkingSpaceId, r.ReservationId })
+            .ToList();
+
+        foreach (var space in spaces)
+        {
+            var reservation = currentUserReservations.FirstOrDefault(r => r.ParkingSpaceId == space.ParkingSpaceId);
+            if (reservation != null)
+            {
+                space.IsReservedByCurrentUser = true;
+                space.CurrentUserReservationId = reservation.ReservationId;
+            }
+        }
+
         var vehicleList = user?.Vehicles.Select(v => new VehicleItemViewModel
         {
             VehicleId = v.VehicleId,
@@ -161,6 +176,7 @@ public class HomeController : Controller
         };
     }
 
+    [Authorize(Roles = "Admin")]
     public IActionResult Dashboard()
     {
         var model = new DashboardViewModel
@@ -188,5 +204,18 @@ public class HomeController : Controller
     public IActionResult Error()
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+    }
+
+    private User? GetCurrentUser()
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdClaim, out var userId))
+        {
+            return null;
+        }
+
+        return _context.Users
+            .Include(u => u.Vehicles)
+            .FirstOrDefault(u => u.UserId == userId);
     }
 }
