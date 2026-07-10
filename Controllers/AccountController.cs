@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ParkHub.Data;
 using ParkHub.Models;
@@ -10,10 +11,12 @@ namespace ParkHub.Controllers
     public class AccountController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IPasswordHasher<User> _passwordHasher;
 
-        public AccountController(ApplicationDbContext context)
+        public AccountController(ApplicationDbContext context, IPasswordHasher<User> passwordHasher)
         {
             _context = context;
+            _passwordHasher = passwordHasher;
         }
 
         public IActionResult Register()
@@ -26,7 +29,9 @@ namespace ParkHub.Controllers
         {
             if (ModelState.IsValid)
             {
+                var plainPassword = user.PasswordHash;
                 user.Role = "Customer";
+                user.PasswordHash = _passwordHasher.HashPassword(user, plainPassword);
 
                 _context.Users.Add(user);
                 _context.SaveChanges();
@@ -46,12 +51,18 @@ namespace ParkHub.Controllers
         public async Task<IActionResult> Login(string email, string password)
         {
             var user = _context.Users
-                .FirstOrDefault(u => u.Email == email && u.PasswordHash == password);
+                .FirstOrDefault(u => u.Email == email);
 
-            if (user == null)
+            if (user == null || !IsValidPassword(user, password))
             {
                 ViewBag.Error = "Invalid email or password";
                 return View();
+            }
+
+            if (!user.PasswordHash.StartsWith("AQAAAA"))
+            {
+                user.PasswordHash = _passwordHasher.HashPassword(user, password);
+                _context.SaveChanges();
             }
 
             var isAdmin = user.Email.Equals("admin@parkhub.com", StringComparison.OrdinalIgnoreCase);
@@ -81,6 +92,17 @@ namespace ParkHub.Controllers
             }
 
             return RedirectToAction("Index", "Home");
+        }
+
+        private bool IsValidPassword(User user, string password)
+        {
+            if (user.PasswordHash.StartsWith("AQAAAA"))
+            {
+                var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
+                return result != PasswordVerificationResult.Failed;
+            }
+
+            return user.PasswordHash == password;
         }
 
         public async Task<IActionResult> Logout()

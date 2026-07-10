@@ -1,11 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using ParkHub.Data;
 using ParkHub.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(
@@ -24,21 +26,26 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
 
     db.Database.EnsureCreated();
+    db.Database.ExecuteSqlRaw(
+        "IF COL_LENGTH('Users', 'Role') IS NULL ALTER TABLE Users ADD Role nvarchar(20) NOT NULL CONSTRAINT DF_Users_Role DEFAULT N'Customer';");
+
     // Development-only seed data: add test user, vehicle and parking spaces if missing
     if (app.Environment.IsDevelopment())
     {
         if (!db.Users.Any(u => u.Email.ToLower() == "admin@parkhub.com"))
         {
-            db.Users.Add(new ParkHub.Models.User
+            var adminUser = new ParkHub.Models.User
             {
                 FullName = "Admin User",
                 Email = "admin@parkhub.com",
                 PhoneNumber = "0500000001",
-                PasswordHash = "admin123",
                 Role = "Admin"
-            });
+            };
+            adminUser.PasswordHash = passwordHasher.HashPassword(adminUser, "admin123");
+            db.Users.Add(adminUser);
             db.SaveChanges();
         }
 
@@ -49,9 +56,9 @@ using (var scope = app.Services.CreateScope())
                 FullName = "Test User",
                 Email = "test@example.com",
                 PhoneNumber = "0500000000",
-                PasswordHash = "seeded",
                 Role = "User"
             };
+            user.PasswordHash = passwordHasher.HashPassword(user, "seeded");
             db.Users.Add(user);
             db.SaveChanges();
 
@@ -84,6 +91,20 @@ using (var scope = app.Services.CreateScope())
             }
         }
 
+        db.SaveChanges();
+    }
+
+    var usersWithPlainTextPasswords = db.Users
+        .Where(user => !user.PasswordHash.StartsWith("AQAAAA"))
+        .ToList();
+
+    foreach (var user in usersWithPlainTextPasswords)
+    {
+        user.PasswordHash = passwordHasher.HashPassword(user, user.PasswordHash);
+    }
+
+    if (usersWithPlainTextPasswords.Any())
+    {
         db.SaveChanges();
     }
 }

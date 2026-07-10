@@ -1,6 +1,7 @@
 @model ParkHub.Models.ParkingIndexViewModel
 @{
     ViewData["Title"] = "Parking Index";
+    var isAdmin = User.IsInRole("Admin");
 }
 
 <div class="container-fluid py-4">
@@ -14,7 +15,10 @@
             <a class="btn btn-outline-success" asp-action="Available" asp-controller="Parking">Available</a>
             <a class="btn btn-outline-danger" asp-action="Reserved" asp-controller="Parking">Reserved</a>
             <a class="btn btn-outline-warning" asp-action="VIP" asp-controller="Parking">VIP</a>
-            <a class="btn btn-primary" asp-action="Create" asp-controller="Parking">Add Space</a>
+            @if (isAdmin)
+            {
+                <a class="btn btn-primary" asp-action="Create" asp-controller="Parking">Add Space</a>
+            }
             <a class="btn btn-primary" asp-action="ReservationHistory" asp-controller="Parking">My Reservations</a>
         </div>
     </div>
@@ -29,7 +33,6 @@
     </form>
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
-        @{ var isAdmin = User.IsInRole("Admin"); }
         @if (Model.ParkingSpaces.Any())
         {
             @foreach (var space in Model.ParkingSpaces)
@@ -47,7 +50,9 @@
                             <p class="card-text text-muted">Status uses the Status field from the ParkingSpace model.</p>
                         </div>
                         <div class="card-footer bg-transparent border-top-0 pt-0">
-                            <div class="d-flex gap-2">
+                            <div class="d-flex flex-wrap gap-2">
+                                <a class="btn btn-sm btn-outline-secondary" asp-action="Details" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking">Details</a>
+
                                 @if (space.Status && !isAdmin)
                                 {
                                     <button class="btn btn-sm btn-outline-secondary flex-grow-1 disabled" disabled>Reserved</button>
@@ -59,7 +64,9 @@
 
                                 @if (isAdmin)
                                 {
-                                    <a class="btn btn-sm btn-outline-secondary" asp-action="ManageSpace" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking" title="Edit">✎</a>
+                                    <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking">Edit</a>
+                                    <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking">Delete</a>
+                                    <a class="btn btn-sm btn-outline-dark" asp-action="ManageSpace" asp-route-id="@space.ParkingSpaceId" asp-controller="Parking">Manage</a>
                                 }
                             </div>
                         </div>

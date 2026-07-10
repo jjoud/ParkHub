@@ -77,6 +77,7 @@ public class ParkingController : Controller
         return View(space);
     }
 
+    [Authorize(Roles = "Admin")]
     public IActionResult Create()
     {
         return View(new ParkingSpace());
@@ -84,6 +85,7 @@ public class ParkingController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
     public IActionResult Create(ParkingSpace parkingSpace)
     {
         if (!ModelState.IsValid)
@@ -97,6 +99,7 @@ public class ParkingController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize(Roles = "Admin")]
     public IActionResult Edit(int id)
     {
         var space = _context.ParkingSpaces.Find(id);
@@ -110,6 +113,7 @@ public class ParkingController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
     public IActionResult Edit(int id, ParkingSpace parkingSpace)
     {
         if (id != parkingSpace.ParkingSpaceId)
@@ -137,6 +141,7 @@ public class ParkingController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize(Roles = "Admin")]
     public IActionResult Delete(int id)
     {
         var space = _context.ParkingSpaces.Find(id);
@@ -150,12 +155,20 @@ public class ParkingController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
     public IActionResult DeleteConfirmed(int id)
     {
         var space = _context.ParkingSpaces.Find(id);
         if (space == null)
         {
             return NotFound();
+        }
+
+        var hasReservations = _context.Reservations.Any(r => r.ParkingSpaceId == id);
+        if (hasReservations)
+        {
+            TempData["ErrorMessage"] = "This parking space has reservations and cannot be deleted.";
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         _context.ParkingSpaces.Remove(space);
@@ -186,6 +199,7 @@ public class ParkingController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
     public IActionResult ChangeStatus(int id, bool status)
     {
         var space = _context.ParkingSpaces.Find(id);
@@ -260,7 +274,7 @@ public class ParkingController : Controller
         if (!availableVehicles.Any())
         {
             TempData["ErrorMessage"] = "You must have an available vehicle before creating a new reservation. Please add or free up a vehicle.";
-            return RedirectToAction(nameof(Vehicles));
+            return RedirectToAction("Index", "Vehicle");
         }
 
         var vehicleList = availableVehicles;

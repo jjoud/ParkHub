@@ -137,7 +137,7 @@ public class VehicleController : Controller
             return userId;
         }
 
-        return _context.Users.Select(u => (int?)u.UserId).FirstOrDefault();
+        return null;
     }
 
     private Vehicle? FindCurrentUserVehicle(int id)
