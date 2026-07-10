@@ -40,6 +40,11 @@ public class ReservationController : Controller
             .FirstOrDefault(u => u.UserId == userId);
     }
 
+    private bool IsAdmin()
+    {
+        return User.IsInRole("Admin");
+    }
+
     public IActionResult Index()
 {
     var user = GetCurrentUser();
@@ -59,11 +64,22 @@ public class ReservationController : Controller
 
 public IActionResult Details(int id)
 {
-    var reservation = _context.Reservations
+    var userId = GetCurrentUserId();
+    if (userId == null)
+        return RedirectToAction("Login", "Account");
+
+    var reservationsQuery = _context.Reservations
         .Include(r => r.Vehicle)
         .Include(r => r.ParkingSpace)
         .Include(r => r.Payment)
-        .FirstOrDefault(r => r.ReservationId == id);
+        .AsQueryable();
+
+    if (!IsAdmin())
+    {
+        reservationsQuery = reservationsQuery.Where(r => r.Vehicle.UserId == userId.Value);
+    }
+
+    var reservation = reservationsQuery.FirstOrDefault(r => r.ReservationId == id);
 
     if (reservation == null)
         return NotFound();
@@ -118,9 +134,21 @@ public IActionResult CalculatePrice(int hours)
 [ValidateAntiForgeryToken]
 public IActionResult FinishReservation(int id)
 {
-    var reservation = _context.Reservations
+    var userId = GetCurrentUserId();
+    if (userId == null)
+        return RedirectToAction("Login", "Account");
+
+    var reservationsQuery = _context.Reservations
         .Include(r => r.ParkingSpace)
-        .FirstOrDefault(r => r.ReservationId == id);
+        .Include(r => r.Vehicle)
+        .AsQueryable();
+
+    if (!IsAdmin())
+    {
+        reservationsQuery = reservationsQuery.Where(r => r.Vehicle.UserId == userId.Value);
+    }
+
+    var reservation = reservationsQuery.FirstOrDefault(r => r.ReservationId == id);
 
     if (reservation == null)
     {
@@ -174,10 +202,30 @@ public IActionResult ReservationHistory()
 
 public IActionResult Payment(int reservationId, decimal amount = 0)
 {
+    var userId = GetCurrentUserId();
+    if (userId == null)
+        return RedirectToAction("Login", "Account");
+
+    var reservation = _context.Reservations
+        .Include(r => r.Vehicle)
+        .Include(r => r.Payment)
+        .FirstOrDefault(r => r.ReservationId == reservationId && (IsAdmin() || r.Vehicle.UserId == userId.Value));
+
+    if (reservation == null)
+    {
+        return NotFound();
+    }
+
+    if (reservation.Payment != null)
+    {
+        TempData["SuccessMessage"] = "Payment already completed for this reservation.";
+        return RedirectToAction(nameof(ReservationHistory));
+    }
+
     var model = new PaymentFormViewModel
     {
         ReservationId = reservationId,
-        Amount = amount
+        Amount = amount > 0 ? amount : reservation.TotalPrice
     };
 
     return View(model);
@@ -191,18 +239,30 @@ public IActionResult Payment(PaymentFormViewModel model)
         return View(model);
     }
 
+    var userId = GetCurrentUserId();
+    if (userId == null)
+        return RedirectToAction("Login", "Account");
+
     var reservation = _context.Reservations
-        .FirstOrDefault(r => r.ReservationId == model.ReservationId);
+        .Include(r => r.Vehicle)
+        .Include(r => r.Payment)
+        .FirstOrDefault(r => r.ReservationId == model.ReservationId && (IsAdmin() || r.Vehicle.UserId == userId.Value));
 
     if (reservation == null)
     {
         return NotFound();
     }
 
+    if (reservation.Payment != null)
+    {
+        TempData["SuccessMessage"] = "Payment already completed for this reservation.";
+        return RedirectToAction(nameof(ReservationHistory));
+    }
+
     var payment = new Payment
     {
         ReservationId = model.ReservationId,
-        Amount = model.Amount,
+        Amount = reservation.TotalPrice,
         PaymentDate = DateTime.Now,
         PaymentMethod = model.PaymentMethod,
         PaymentStatus = "Completed"
@@ -296,6 +356,26 @@ public IActionResult Create(ReservationFormViewModel model)
         return View(model);
     }
 
+    var currentUser = GetCurrentUser();
+    if (currentUser == null)
+    {
+        return RedirectToAction("Login", "Account");
+    }
+
+    if (!currentUser.Vehicles.Any(v => v.VehicleId == model.VehicleId))
+    {
+        ModelState.AddModelError("VehicleId", "Please select one of your vehicles.");
+        model.Vehicles = currentUser.Vehicles.Select(v => new VehicleItemViewModel
+        {
+            VehicleId = v.VehicleId,
+            PlateNumber = v.PlateNumber,
+            VehicleType = v.VehicleType,
+            Color = v.Color
+        }).ToList();
+
+        return View(model);
+    }
+
     int duration =
         (int)Math.Ceiling((model.EndTime - model.StartTime).TotalHours);
 
@@ -327,10 +407,21 @@ public IActionResult Create(ReservationFormViewModel model)
 }
         public IActionResult Edit(int id)
 {
-    var reservation = _context.Reservations
+    var userId = GetCurrentUserId();
+    if (userId == null)
+        return RedirectToAction("Login", "Account");
+
+    var reservationsQuery = _context.Reservations
         .Include(r => r.Vehicle)
         .Include(r => r.ParkingSpace)
-        .FirstOrDefault(r => r.ReservationId == id);
+        .AsQueryable();
+
+    if (!IsAdmin())
+    {
+        reservationsQuery = reservationsQuery.Where(r => r.Vehicle.UserId == userId.Value);
+    }
+
+    var reservation = reservationsQuery.FirstOrDefault(r => r.ReservationId == id);
 
     if (reservation == null)
     {
@@ -380,12 +471,32 @@ public IActionResult Edit(int id, ReservationFormViewModel model)
         return View(model);
     }
 
+    var userId = GetCurrentUserId();
+    if (userId == null)
+        return RedirectToAction("Login", "Account");
+
     var reservation = _context.Reservations
-        .FirstOrDefault(r => r.ReservationId == id);
+        .Include(r => r.Vehicle)
+        .FirstOrDefault(r => r.ReservationId == id && (IsAdmin() || r.Vehicle.UserId == userId.Value));
 
     if (reservation == null)
     {
         return NotFound();
+    }
+
+    var currentUser = GetCurrentUser();
+    if (!IsAdmin() && (currentUser == null || !currentUser.Vehicles.Any(v => v.VehicleId == model.VehicleId)))
+    {
+        ModelState.AddModelError("VehicleId", "Please select one of your vehicles.");
+        model.Vehicles = currentUser?.Vehicles.Select(v => new VehicleItemViewModel
+        {
+            VehicleId = v.VehicleId,
+            PlateNumber = v.PlateNumber,
+            VehicleType = v.VehicleType,
+            Color = v.Color
+        }).ToList() ?? new List<VehicleItemViewModel>();
+
+        return View(model);
     }
 
     reservation.VehicleId = model.VehicleId;
@@ -408,10 +519,21 @@ public IActionResult Edit(int id, ReservationFormViewModel model)
 
 public IActionResult Delete(int id)
 {
-    var reservation = _context.Reservations
+    var userId = GetCurrentUserId();
+    if (userId == null)
+        return RedirectToAction("Login", "Account");
+
+    var reservationsQuery = _context.Reservations
         .Include(r => r.Vehicle)
         .Include(r => r.ParkingSpace)
-        .FirstOrDefault(r => r.ReservationId == id);
+        .AsQueryable();
+
+    if (!IsAdmin())
+    {
+        reservationsQuery = reservationsQuery.Where(r => r.Vehicle.UserId == userId.Value);
+    }
+
+    var reservation = reservationsQuery.FirstOrDefault(r => r.ReservationId == id);
 
     if (reservation == null)
     {
@@ -424,9 +546,21 @@ public IActionResult Delete(int id)
 [ValidateAntiForgeryToken]
 public IActionResult DeleteConfirmed(int id)
 {
-    var reservation = _context.Reservations
+    var userId = GetCurrentUserId();
+    if (userId == null)
+        return RedirectToAction("Login", "Account");
+
+    var reservationsQuery = _context.Reservations
         .Include(r => r.ParkingSpace)
-        .FirstOrDefault(r => r.ReservationId == id);
+        .Include(r => r.Vehicle)
+        .AsQueryable();
+
+    if (!IsAdmin())
+    {
+        reservationsQuery = reservationsQuery.Where(r => r.Vehicle.UserId == userId.Value);
+    }
+
+    var reservation = reservationsQuery.FirstOrDefault(r => r.ReservationId == id);
 
     if (reservation == null)
     {
