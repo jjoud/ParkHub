@@ -188,6 +188,10 @@
             const isAdmin = document.getElementById('parkingArea').dataset.isAdmin?.toString().toLowerCase() === 'true';
             const reservationModalEl = document.getElementById('userReservationModal');
             const reservationModal = new bootstrap.Modal(reservationModalEl);
+            const reservationParams = new URLSearchParams(window.location.search);
+            const selectedParkingSpaceId = Number(reservationParams.get('parkingSpaceId'));
+            const selectedVehicleId = Number(reservationParams.get('vehicleId'));
+            const shouldOpenReservation = reservationParams.get('openReservation') === 'true';
 
                     document.querySelectorAll('.parking-space').forEach(btn => {
                 btn.addEventListener('click', function () {
@@ -219,9 +223,18 @@
                         return;
                     }
 
+                    if (!shouldOpenReservation || Number(spaceId) !== selectedParkingSpaceId) {
+                        const returnUrl = window.location.pathname + window.location.search;
+                        window.location.href = `/Vehicle/Index?parkingSpaceId=${encodeURIComponent(spaceId)}&areaName=${encodeURIComponent(areaName)}&returnUrl=${encodeURIComponent(returnUrl)}`;
+                        return;
+                    }
+
                     document.getElementById('UR_ParkingSpaceId').value = spaceId;
                     document.getElementById('UR_AreaName').value = areaName;
                     document.getElementById('UR_SpaceNumber').value = spaceNumber;
+                    if (selectedVehicleId > 0) {
+                        document.getElementById('UR_VehicleId').value = selectedVehicleId;
+                    }
 
                     const now = new Date();
                     const inOneHour = new Date(now.getTime() + 60 * 60 * 1000);
@@ -289,6 +302,11 @@
             userForm.addEventListener('submit', function (e) {
                 computeAndSetPrice();
             });
+
+            if (shouldOpenReservation && selectedParkingSpaceId > 0) {
+                const selectedSpace = document.querySelector(`.parking-space[data-space-id="${selectedParkingSpaceId}"]`);
+                selectedSpace?.click();
+            }
         });
     </script>
 }

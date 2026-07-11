@@ -1,15 +1,22 @@
 @model ParkHub.Models.VehicleListViewModel
 @{
     ViewData["Title"] = "My Vehicles";
+    var parkingSpaceId = Model.ParkingSpaceId;
+    var vehicleFormViewData = new ViewDataDictionary(ViewData)
+    {
+        ["ParkingSpaceId"] = parkingSpaceId,
+        ["AreaName"] = Model.AreaName,
+        ["ReturnUrl"] = Model.ReturnUrl
+    };
 }
 
 <div class="container-fluid py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-1">My Vehicles</h1>
-            <p class="text-muted mb-0">Manage your vehicle fleet for faster reservations.</p>
+            <h1 class="h3 mb-1">@(parkingSpaceId.GetValueOrDefault() > 0 ? "Select a Vehicle" : "My Vehicles")</h1>
+            <p class="text-muted mb-0">@(parkingSpaceId.GetValueOrDefault() > 0 ? "Choose a vehicle to continue with your reservation." : "Manage your vehicle fleet for faster reservations.")</p>
         </div>
-        <a class="btn btn-primary btn-lg" asp-action="Create" asp-controller="Vehicle">Add New Vehicle</a>
+        <a class="btn btn-primary btn-lg" href="#add-vehicle">Add New Vehicle</a>
     </div>
 
     <div class="card border-0 shadow-sm">
@@ -34,6 +41,16 @@
                                     <td>@vehicle.VehicleType</td>
                                     <td>@vehicle.Color</td>
                                     <td class="text-end">
+                                        @if (parkingSpaceId.GetValueOrDefault() > 0)
+                                        {
+                                            <form asp-action="ContinueToReservation" asp-controller="Vehicle" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="parkingSpaceId" value="@parkingSpaceId" />
+                                                <input type="hidden" name="vehicleId" value="@vehicle.VehicleId" />
+                                                <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                                                <button type="submit" class="btn btn-sm btn-primary me-2">Select</button>
+                                            </form>
+                                        }
                                         <a class="btn btn-sm btn-outline-secondary me-2" asp-action="Edit" asp-route-id="@vehicle.VehicleId" asp-controller="Vehicle">Edit</a>
                                         <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@vehicle.VehicleId" asp-controller="Vehicle">Delete</a>
                                     </td>
@@ -43,7 +60,7 @@
                         else
                         {
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-4">No vehicles registered yet.</td>
+                                <td colspan="4" class="text-center text-muted py-4">You don't have any vehicles yet. Please add one.</td>
                             </tr>
                         }
                     </tbody>
@@ -51,4 +68,19 @@
             </div>
         </div>
     </div>
+
+    <div class="row justify-content-center mt-4" id="add-vehicle">
+        <div class="col-12 col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">Add Vehicle</h2>
+                    <partial name="_VehicleForm" model="Model.NewVehicle" view-data="vehicleFormViewData" />
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

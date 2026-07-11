@@ -1,0 +1,39 @@
+@model ParkHub.Models.VehicleFormViewModel
+@{
+    var parkingSpaceId = Convert.ToString(ViewData["ParkingSpaceId"]);
+    var areaName = ViewData["AreaName"] as string;
+    var returnUrl = ViewData["ReturnUrl"] as string;
+}
+
+<form asp-action="Create" asp-controller="Vehicle" method="post">
+    <input type="hidden" name="parkingSpaceId" value="@parkingSpaceId" />
+    <input type="hidden" name="areaName" value="@areaName" />
+    <input type="hidden" name="returnUrl" value="@returnUrl" />
+    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+    <div class="mb-3">
+        <label asp-for="PlateNumber" class="form-label">Plate Number</label>
+        <input asp-for="PlateNumber" class="form-control" />
+        <span asp-validation-for="PlateNumber" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="VehicleType" class="form-label">Vehicle Type</label>
+        <select asp-for="VehicleType" class="form-select">
+            <option value="">-- Select Vehicle Type --</option>
+            <option value="Car">Car</option>
+            <option value="SUV">SUV</option>
+            <option value="Sedan">Sedan</option>
+            <option value="Truck">Truck</option>
+            <option value="Motorcycle">Motorcycle</option>
+        </select>
+        <span asp-validation-for="VehicleType" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Color" class="form-label">Color</label>
+        <input asp-for="Color" class="form-control" />
+        <span asp-validation-for="Color" class="text-danger small"></span>
+    </div>
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Save Vehicle</button>
+        <a class="btn btn-outline-secondary" asp-action="Index">Cancel</a>
+    </div>
+</form>
