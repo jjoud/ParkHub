@@ -17,14 +17,34 @@ public class VehicleController : Controller
         _context = context;
     }
 
-    public IActionResult Index()
+    public IActionResult Index(int? parkingSpaceId, string? areaName, string? returnUrl)
     {
-        return View(new VehicleListViewModel { Vehicles = GetCurrentUserVehicles() });
+        return View(new VehicleListViewModel
+        {
+            Vehicles = GetCurrentUserVehicles(),
+            ParkingSpaceId = parkingSpaceId,
+            AreaName = areaName,
+            ReturnUrl = returnUrl
+        });
     }
 
     public IActionResult MyVehicles()
     {
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult ContinueToReservation(int parkingSpaceId, int vehicleId, string? returnUrl)
+    {
+        var vehicle = FindCurrentUserVehicle(vehicleId);
+
+        if (vehicle == null)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        return RedirectToReservation(parkingSpaceId, vehicle.VehicleId, returnUrl);
     }
 
     public IActionResult Create()
@@ -34,10 +54,22 @@ public class VehicleController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Create(VehicleFormViewModel model)
+    public IActionResult Create(VehicleFormViewModel model, int? parkingSpaceId, string? areaName, string? returnUrl)
     {
         if (!ModelState.IsValid)
         {
+            if (parkingSpaceId.GetValueOrDefault() > 0)
+            {
+                return View(nameof(Index), new VehicleListViewModel
+                {
+                    Vehicles = GetCurrentUserVehicles(),
+                    NewVehicle = model,
+                    ParkingSpaceId = parkingSpaceId,
+                    AreaName = areaName,
+                    ReturnUrl = returnUrl
+                });
+            }
+
             return View(model);
         }
 
@@ -58,6 +90,13 @@ public class VehicleController : Controller
 
         _context.Vehicles.Add(vehicle);
         _context.SaveChanges();
+
+        var selectedParkingSpaceId = parkingSpaceId.GetValueOrDefault();
+        if (selectedParkingSpaceId > 0)
+        {
+            // Use the exact same ownership check and redirect path as the Select button.
+            return ContinueToReservation(selectedParkingSpaceId, vehicle.VehicleId, returnUrl);
+        }
 
         return RedirectToAction(nameof(Index));
     }
@@ -169,5 +208,36 @@ public class VehicleController : Controller
                 Color = v.Color
             })
             .ToList();
+    }
+
+    private IActionResult RedirectToReservation(int parkingSpaceId, int vehicleId, string? returnUrl)
+    {
+        var space = _context.ParkingSpaces.Find(parkingSpaceId);
+        if (space == null)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            var separator = returnUrl.Contains('?') ? "&" : "?";
+            return Redirect($"{returnUrl}{separator}openReservation=true&parkingSpaceId={parkingSpaceId}&vehicleId={vehicleId}");
+        }
+
+        var areaAction = space.AreaName switch
+        {
+            "Area A" => "AreaA",
+            "Area B" => "AreaB",
+            "Area C" => "AreaC",
+            "Area D" => "AreaD",
+            _ => "UserHome"
+        };
+
+        return RedirectToAction(areaAction, "Home", new
+        {
+            openReservation = true,
+            parkingSpaceId,
+            vehicleId
+        });
     }
 }

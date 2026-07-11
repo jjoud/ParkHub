@@ -9,10 +9,11 @@
 
         <div class="card-header bg-white">
             <h3 class="fw-bold text-purple mb-0">
-                Reserve Parking Space
+                Reserve Parking Space 
             </h3>
+          
         </div>
-
+     
         <div class="card-body">
 
             <form asp-action="Create" method="post">
@@ -25,16 +26,12 @@
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Area</label>
-                        <input class="form-control"
-                               value="@Model.AreaName"
-                               readonly />
+                        <input class="form-control" value="@Model.AreaName" readonly />
                     </div>
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Parking Space</label>
-                        <input class="form-control"
-                               value="@Model.SpaceNumber"
-                               readonly />
+                        <input class="form-control" value="@Model.SpaceNumber" readonly />
                     </div>
 
                 </div>
@@ -43,8 +40,7 @@
 
                     <label asp-for="VehicleId" class="form-label"></label>
 
-                    <select asp-for="VehicleId"
-                            asp-items="@(new SelectList(Model.Vehicles,"VehicleId","PlateNumber"))"
+                    <select asp-for="VehicleId" asp-items="@(new SelectList(Model.Vehicles, "VehicleId", "PlateNumber"))"
                             class="form-select">
 
                         <option value="">Select Vehicle</option>
@@ -52,35 +48,56 @@
                     </select>
 
                     <span asp-validation-for="VehicleId" class="text-danger"></span>
+                  <div class="mt-2">
+   
+                </div>
+             
+                <div id="carForm" class="card p-3 mt-3" style="display:none;">
+
+                    <div class="mb-3">
+                        <label>Plate Number</label>
+                        <input type="text" id="PlateNumber" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Vehicle Type</label>
+                        <select id="VehicleType" class="form-select">
+                            <option>Sedan</option>
+                            <option>SUV</option>
+                            <option>Truck</option>
+                            <option>Motorcycle</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Color</label>
+                        <input type="text" id="Color" class="form-control" />
+                    </div>
+
+                    <button type="button" class="btn btn-success">
+                        Save Vehicle
+                    </button>
 
                 </div>
-
                 <div class="row">
 
                     <div class="col-md-6 mb-3">
 
                         <label asp-for="StartTime" class="form-label"></label>
 
-                        <input asp-for="StartTime"
-                               type="datetime-local"
-                               class="form-control" />
+                        <input asp-for="StartTime" type="datetime-local" class="form-control" />
 
-                        <span asp-validation-for="StartTime"
-                              class="text-danger"></span>
+                        <span asp-validation-for="StartTime" class="text-danger"></span>
 
                     </div>
 
                     <div class="col-md-6 mb-3">
 
-                        <label asp-for="EndTime"
-                               class="form-label"></label>
+                        <label asp-for="EndTime" class="form-label"></label>
 
-                        <input asp-for="EndTime"
-                               type="datetime-local"
-                               class="form-control" />
+                        <input asp-for="EndTime" type="datetime-local" class="form-control" />
 
-                        <span asp-validation-for="EndTime"
-                              class="text-danger"></span>
+                        <span asp-validation-for="EndTime" class="text-danger"></span>
 
                     </div>
 
@@ -88,15 +105,13 @@
 
                 <div class="d-flex gap-2">
 
-                    <button type="submit"
-                            class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary">
 
                         Confirm Reservation
 
                     </button>
 
-                    <a asp-action="Index"
-                       class="btn btn-outline-secondary">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
 
                         Cancel
 
@@ -112,6 +127,7 @@
 
 </div>
 
-@section Scripts{
+@section Scripts {
     <partial name="_ValidationScriptsPartial" />
+   
 }
