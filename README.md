@@ -4,6 +4,8 @@ ParkHub is a smart parking management system built with ASP.NET Core MVC and SQL
 
 This project was created after completing an ASP.NET Core course at Tuwaiq Academy.
 
+[![View Case Study](https://img.shields.io/badge/View-Case%20Study-2ea44f?style=for-the-badge)](https://verdant-scone-e58f1a.netlify.app/)
+
 ## Project Idea
 
 The main idea of ParkHub is to make parking management easier for both customers and administrators.
